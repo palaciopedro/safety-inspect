@@ -1,5 +1,5 @@
-import { supabase } from '@/lib/supabase';
-import { Inspection, Finding } from '@/types';
+import { supabase } from '../lib/supabase';
+import { Inspection, Finding } from '../types';
 
 export const db = {
   inspections: {
@@ -31,6 +31,14 @@ export const db = {
         .single();
       if (error) throw error;
       return data as Inspection;
+    },
+
+    delete: async (id: string) => {
+      const { error } = await supabase
+        .from('inspections')
+        .delete()
+        .eq('id', id);
+      if (error) throw error;
     }
   },
   
@@ -53,6 +61,14 @@ export const db = {
         .single();
       if (error) throw error;
       return data as Finding;
+    },
+    
+    delete: async (id: string) => {
+      const { error } = await supabase
+        .from('findings')
+        .delete()
+        .eq('id', id);
+      if (error) throw error;
     }
   }
 };

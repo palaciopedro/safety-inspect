@@ -37,6 +37,15 @@ export default function InspectionDetail() {
     }
   };
 
+  const handleDeleteFinding = async (findingId: string) => {
+    try {
+      await db.findings.delete(findingId);
+      loadData();
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   if (!inspection) return null;
 
   return (
@@ -67,7 +76,9 @@ export default function InspectionDetail() {
       <FlatList
         data={findings}
         keyExtractor={item => item.id}
-        renderItem={({ item }) => <FindingCard finding={item} />}
+        renderItem={({ item }) => (
+          <FindingCard finding={item} onDelete={() => handleDeleteFinding(item.id)} />
+        )}
         contentContainerStyle={styles.list}
         ListEmptyComponent={
           <Text style={styles.empty}>Nenhuma ocorrência registrada</Text>

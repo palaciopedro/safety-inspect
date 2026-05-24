@@ -25,6 +25,15 @@ export default function Home() {
     }
   };
 
+  const handleDelete = async (id: string) => {
+    try {
+      await db.inspections.delete(id);
+      loadInspections();
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -33,7 +42,7 @@ export default function Home() {
           style={styles.button}
           onPress={() => router.push('/new-inspection')}
         >
-          <Text style={styles.buttonText}>Adicionar inspeção</Text>
+          <Text style={styles.buttonText}>Nova Inspeção</Text>
         </TouchableOpacity>
       </View>
 
@@ -44,6 +53,7 @@ export default function Home() {
           <InspectionCard
             inspection={item}
             onPress={() => router.push(`/inspection/${item.id}`)}
+            onDelete={() => handleDelete(item.id)}
           />
         )}
         contentContainerStyle={styles.list}
