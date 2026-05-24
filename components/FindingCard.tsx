@@ -32,12 +32,16 @@ export const FindingCard = ({ finding, onDelete }: Props) => {
   return (
     <View style={styles.card}>
       <View style={styles.header}>
-        <Text style={styles.description}>{finding.description}</Text>
+        <Text style={styles.description}>{finding.risk_description}</Text>
         <RiskBadge level={finding.risk_level} />
       </View>
-      <View style={styles.metrics}>
-        <Text style={styles.metric}>Prob: {finding.probability}</Text>
-        <Text style={styles.metric}>Imp: {finding.impact}</Text>
+      <View style={styles.row}>
+        <Text style={styles.label}>Pontuação:</Text>
+        <Text style={styles.value}>{finding.calculated_score.toFixed(2)}</Text>
+      </View>
+      <View style={styles.row}>
+        <Text style={styles.label}>Inspetor:</Text>
+        <Text style={styles.value}>{finding.inspector_name}</Text>
       </View>
       
       <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
@@ -65,13 +69,19 @@ const styles = StyleSheet.create({
   },
   description: {
     fontSize: 14,
+    fontWeight: '500',
     flex: 1,
   },
-  metrics: {
+  row: {
     flexDirection: 'row',
-    gap: 16,
+    gap: 8,
   },
-  metric: {
+  label: {
+    fontSize: 12,
+    color: '#666',
+    fontWeight: '600',
+  },
+  value: {
     fontSize: 12,
     color: '#666',
   },

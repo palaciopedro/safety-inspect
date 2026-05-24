@@ -7,10 +7,11 @@ interface Props {
 }
 
 const riskLabels: Record<RiskLevel, string> = {
-  low: 'BAIXO',
-  medium: 'MÉDIO',
-  high: 'ALTO',
-  critical: 'CRÍTICO',
+  raro: 'RARO',
+  baixo: 'BAIXO',
+  atencao: 'ATENÇÃO',
+  alto: 'ALTO',
+  extremo: 'EXTREMO',
 };
 
 export const RiskBadge = ({ level }: Props) => (

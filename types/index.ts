@@ -1,7 +1,4 @@
-export type RiskLevel = 'low' | 'medium' | 'high' | 'critical';
-
-export type Probability = 1 | 2 | 3 | 4 | 5;
-export type Impact = 1 | 2 | 3 | 4 | 5;
+export type RiskLevel = 'raro' | 'baixo' | 'atencao' | 'alto' | 'extremo';
 
 export interface Inspection {
   id: string;
@@ -11,19 +8,28 @@ export interface Inspection {
   created_at: string;
 }
 
+export interface DropdownOption {
+  label: string;
+  value: number;
+}
+
 export interface Finding {
   id: string;
   inspection_id: string;
-  description: string;
-  probability: Probability;
-  impact: Impact;
+  risk_description: string;
+  what_to_do: string;
+  why_to_do: string;
+  gravity_label: string;
+  gravity_value: number;
+  frequency_label: string;
+  frequency_value: number;
+  probability_label: string;
+  probability_value: number;
+  exposure_label: string;
+  exposure_value: number;
+  inspector_name: string;
+  inspector_role: string;
+  calculated_score: number;
   risk_level: RiskLevel;
-  photo_url?: string;
   created_at: string;
-}
-
-export interface RiskMatrix {
-  probability: Probability;
-  impact: Impact;
-  level: RiskLevel;
 }
