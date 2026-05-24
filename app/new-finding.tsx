@@ -34,18 +34,18 @@ export default function NewFinding() {
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.label}>Description</Text>
+      <Text style={styles.label}>Descrição</Text>
       <TextInput
         style={styles.input}
         value={description}
         onChangeText={setDescription}
-        placeholder="Describe the security finding"
+        placeholder="Descreva a ocorrência de segurança"
         multiline
         numberOfLines={4}
         textAlignVertical="top"
       />
 
-      <Text style={styles.label}>Risk Matrix</Text>
+      <Text style={styles.label}>Matriz de Risco</Text>
       <RiskMatrix
         selected={risk || undefined}
         onSelect={(probability, impact) => setRisk({ probability, impact })}
@@ -53,7 +53,7 @@ export default function NewFinding() {
 
       {risk && (
         <View style={styles.result}>
-          <Text style={styles.resultLabel}>Risk Level:</Text>
+          <Text style={styles.resultLabel}>Nível de Risco:</Text>
           <RiskBadge level={calculateRisk(risk.probability, risk.impact)} />
         </View>
       )}
@@ -63,7 +63,7 @@ export default function NewFinding() {
         onPress={handleSubmit}
         disabled={!isValid}
       >
-        <Text style={styles.buttonText}>Save Finding</Text>
+        <Text style={styles.buttonText}>Salvar Ocorrência</Text>
       </TouchableOpacity>
     </ScrollView>
   );

@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet } from 'react-native';
-import { Finding } from '@/types';
+import { Finding } from '../types';
 import { RiskBadge } from './RiskBadge';
 
 interface Props {

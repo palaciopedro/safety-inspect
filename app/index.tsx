@@ -28,12 +28,12 @@ export default function Home() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Inspections</Text>
+        <Text style={styles.title}>Inspeções</Text>
         <TouchableOpacity
           style={styles.button}
           onPress={() => router.push('/new-inspection')}
         >
-          <Text style={styles.buttonText}>+ New</Text>
+          <Text style={styles.buttonText}>Adicionar inspeção</Text>
         </TouchableOpacity>
       </View>
 

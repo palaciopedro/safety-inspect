@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { Probability, Impact } from '@/types';
-import { calculateRisk, getRiskColor } from '@/utils/risk';
+import { Probability, Impact } from '../types';
+import { calculateRisk, getRiskColor } from '../utils/risk';
 
 interface Props {
   onSelect: (probability: Probability, impact: Impact) => void;

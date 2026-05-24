@@ -25,20 +25,20 @@ export default function NewInspection() {
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.label}>Unit</Text>
+      <Text style={styles.label}>Unidade</Text>
       <TextInput
         style={styles.input}
         value={unit}
         onChangeText={setUnit}
-        placeholder="e.g. Unit A-101"
+        placeholder="Ex: Campo Mourão"
       />
 
-      <Text style={styles.label}>Date</Text>
+      <Text style={styles.label}>Data</Text>
       <TextInput
         style={styles.input}
         value={date}
         onChangeText={setDate}
-        placeholder="YYYY-MM-DD"
+        placeholder="AAAA-MM-DD"
       />
 
       <TouchableOpacity
@@ -46,7 +46,7 @@ export default function NewInspection() {
         onPress={handleSubmit}
         disabled={!isValid}
       >
-        <Text style={styles.buttonText}>Create Inspection</Text>
+        <Text style={styles.buttonText}>Criar Inspeção</Text>
       </TouchableOpacity>
     </ScrollView>
   );

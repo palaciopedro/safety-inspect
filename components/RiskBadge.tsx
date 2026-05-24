@@ -1,14 +1,21 @@
 import { View, Text, StyleSheet } from 'react-native';
-import { RiskLevel } from '@/types';
-import { getRiskColor } from '@/utils/risk';
+import { RiskLevel } from '../types';
+import { getRiskColor } from '../utils/risk';
 
 interface Props {
   level: RiskLevel;
 }
 
+const riskLabels: Record<RiskLevel, string> = {
+  low: 'BAIXO',
+  medium: 'MÉDIO',
+  high: 'ALTO',
+  critical: 'CRÍTICO',
+};
+
 export const RiskBadge = ({ level }: Props) => (
   <View style={[styles.badge, { backgroundColor: getRiskColor(level) }]}>
-    <Text style={styles.text}>{level.toUpperCase()}</Text>
+    <Text style={styles.text}>{riskLabels[level]}</Text>
   </View>
 );
 

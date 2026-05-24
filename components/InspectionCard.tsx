@@ -6,15 +6,20 @@ interface Props {
   onPress: () => void;
 }
 
+const statusLabels = {
+  draft: 'Rascunho',
+  completed: 'Finalizada',
+};
+
 export const InspectionCard = ({ inspection, onPress }: Props) => (
   <TouchableOpacity style={styles.card} onPress={onPress}>
     <View style={styles.header}>
       <Text style={styles.unit}>{inspection.unit}</Text>
       <View style={[styles.status, inspection.status === 'completed' && styles.completed]}>
-        <Text style={styles.statusText}>{inspection.status}</Text>
+        <Text style={styles.statusText}>{statusLabels[inspection.status]}</Text>
       </View>
     </View>
-    <Text style={styles.date}>{new Date(inspection.date).toLocaleDateString()}</Text>
+    <Text style={styles.date}>{new Date(inspection.date).toLocaleDateString('pt-BR')}</Text>
   </TouchableOpacity>
 );
 

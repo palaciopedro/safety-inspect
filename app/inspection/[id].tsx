@@ -43,7 +43,7 @@ export default function InspectionDetail() {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.unit}>{inspection.unit}</Text>
-        <Text style={styles.date}>{new Date(inspection.date).toLocaleDateString()}</Text>
+        <Text style={styles.date}>{new Date(inspection.date).toLocaleDateString('pt-BR')}</Text>
       </View>
 
       <View style={styles.actions}>
@@ -51,7 +51,7 @@ export default function InspectionDetail() {
           style={styles.button}
           onPress={() => router.push(`/new-finding?inspectionId=${id}`)}
         >
-          <Text style={styles.buttonText}>+ Add Finding</Text>
+          <Text style={styles.buttonText}>Adicionar Ocorrência</Text>
         </TouchableOpacity>
         
         {inspection.status === 'draft' && (
@@ -59,7 +59,7 @@ export default function InspectionDetail() {
             style={[styles.button, styles.complete]}
             onPress={handleComplete}
           >
-            <Text style={styles.buttonText}>Complete</Text>
+            <Text style={styles.buttonText}>Finalizar</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -70,7 +70,7 @@ export default function InspectionDetail() {
         renderItem={({ item }) => <FindingCard finding={item} />}
         contentContainerStyle={styles.list}
         ListEmptyComponent={
-          <Text style={styles.empty}>No findings recorded</Text>
+          <Text style={styles.empty}>Nenhuma ocorrência registrada</Text>
         }
       />
     </View>
@@ -115,6 +115,7 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#fff',
     fontWeight: '600',
+    textAlign: 'center',
   },
   list: {
     padding: 16,
