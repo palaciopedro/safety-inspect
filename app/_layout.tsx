@@ -1,0 +1,12 @@
+import { Stack } from 'expo-router';
+
+export default function Layout() {
+  return (
+    <Stack>
+      <Stack.Screen name="index" options={{ title: 'Inspeções' }} />
+      <Stack.Screen name="new-inspection" options={{ title: 'Nova Inspeção' }} />
+      <Stack.Screen name="inspection/[id]" options={{ title: 'Detalhes' }} />
+      <Stack.Screen name="new-finding" options={{ title: 'Novo Achado' }} />
+    </Stack>
+  );
+}

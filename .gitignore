@@ -1,0 +1,49 @@
+# dependencies
+node_modules/
+
+# expo
+.expo/
+dist/
+web-build/
+
+# native
+*.keystore
+*.p12
+*.jks
+*.pem
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# local env files
+.env
+.env.local
+.env.development.local
+.env.production.local
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# vscode
+.vscode/
+
+# TypeScript
+*.tsbuildinfo
+
+# generated
+coverage/
+
+# Supabase local
+.supabase/
+
+# temporary
+.tmp/
+temp/
+
+# package lock optional
+# package-lock.json
