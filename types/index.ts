@@ -5,6 +5,8 @@ export interface Inspection {
   unit: string;
   date: string;
   status: 'draft' | 'completed';
+  inspector_name?: string;
+  inspector_role?: string;
   created_at: string;
 }
 
@@ -27,8 +29,6 @@ export interface Finding {
   probability_value: number;
   exposure_label: string;
   exposure_value: number;
-  inspector_name: string;
-  inspector_role: string;
   calculated_score: number;
   risk_level: RiskLevel;
   created_at: string;

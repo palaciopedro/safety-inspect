@@ -24,8 +24,6 @@ export default function NewFinding() {
   const [frequency, setFrequency] = useState<DropdownOption | null>(null);
   const [probability, setProbability] = useState<DropdownOption | null>(null);
   const [exposure, setExposure] = useState<DropdownOption | null>(null);
-  const [inspectorName, setInspectorName] = useState('');
-  const [inspectorRole, setInspectorRole] = useState('');
 
   const calculatedScore = useMemo(() => {
     if (!gravity || !frequency || !probability || !exposure) return 0;
@@ -58,8 +56,6 @@ export default function NewFinding() {
         probability_value: probability.value,
         exposure_label: exposure.label,
         exposure_value: exposure.value,
-        inspector_name: inspectorName,
-        inspector_role: inspectorRole,
         calculated_score: calculatedScore,
         risk_level: riskLevel,
       });
@@ -76,9 +72,7 @@ export default function NewFinding() {
     gravity &&
     frequency &&
     probability &&
-    exposure &&
-    inspectorName.trim() &&
-    inspectorRole.trim();
+    exposure;
 
   return (
     <ScrollView style={styles.container}>
@@ -149,24 +143,6 @@ export default function NewFinding() {
         onSelect={setExposure}
       />
 
-      <View style={styles.spacer} />
-
-      <Text style={styles.label}>Nome do Inspetor</Text>
-      <TextInput
-        style={styles.input}
-        value={inspectorName}
-        onChangeText={setInspectorName}
-        placeholder="Nome completo"
-      />
-
-      <Text style={styles.label}>Cargo do Inspetor</Text>
-      <TextInput
-        style={styles.input}
-        value={inspectorRole}
-        onChangeText={setInspectorRole}
-        placeholder="Cargo ou função"
-      />
-
       {calculatedScore > 0 && (
         <View style={styles.result}>
           <View style={styles.resultRow}>
@@ -202,14 +178,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginTop: 16,
     marginBottom: 8,
-  },
-  input: {
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
   },
   multiline: {
     backgroundColor: '#fff',

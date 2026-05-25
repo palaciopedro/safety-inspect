@@ -39,10 +39,6 @@ export const FindingCard = ({ finding, onDelete }: Props) => {
         <Text style={styles.label}>Pontuação:</Text>
         <Text style={styles.value}>{finding.calculated_score.toFixed(2)}</Text>
       </View>
-      <View style={styles.row}>
-        <Text style={styles.label}>Inspetor:</Text>
-        <Text style={styles.value}>{finding.inspector_name}</Text>
-      </View>
       
       <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
         <TrashIcon />

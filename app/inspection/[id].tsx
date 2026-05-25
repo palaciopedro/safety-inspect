@@ -3,6 +3,7 @@ import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Inspection, Finding } from '../../types';
 import { FindingCard } from '../../components/FindingCard';
+import { FinalizationModal } from '../../components/FinalizationModal';
 import { db } from '../../services/database';
 
 export default function InspectionDetail() {
@@ -10,6 +11,7 @@ export default function InspectionDetail() {
   const router = useRouter();
   const [inspection, setInspection] = useState<Inspection | null>(null);
   const [findings, setFindings] = useState<Finding[]>([]);
+  const [showFinalizationModal, setShowFinalizationModal] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -28,9 +30,18 @@ export default function InspectionDetail() {
     }
   };
 
-  const handleComplete = async () => {
+  const handleFinalize = (inspectorName: string, inspectorRole: string) => {
+    finalize(inspectorName, inspectorRole);
+  };
+
+  const finalize = async (inspectorName: string, inspectorRole: string) => {
     try {
-      await db.inspections.update(id, { status: 'completed' });
+      await db.inspections.update(id, {
+        status: 'completed',
+        inspector_name: inspectorName,
+        inspector_role: inspectorRole,
+      });
+      setShowFinalizationModal(false);
       loadData();
     } catch (error) {
       console.error(error);
@@ -53,6 +64,11 @@ export default function InspectionDetail() {
       <View style={styles.header}>
         <Text style={styles.unit}>{inspection.unit}</Text>
         <Text style={styles.date}>{new Date(inspection.date).toLocaleDateString('pt-BR')}</Text>
+        {inspection.inspector_name && (
+          <Text style={styles.inspector}>
+            Inspetor: {inspection.inspector_name} - {inspection.inspector_role}
+          </Text>
+        )}
       </View>
 
       <View style={styles.actions}>
@@ -66,7 +82,7 @@ export default function InspectionDetail() {
         {inspection.status === 'draft' && (
           <TouchableOpacity
             style={[styles.button, styles.complete]}
-            onPress={handleComplete}
+            onPress={() => setShowFinalizationModal(true)}
           >
             <Text style={styles.buttonText}>Finalizar</Text>
           </TouchableOpacity>
@@ -83,6 +99,12 @@ export default function InspectionDetail() {
         ListEmptyComponent={
           <Text style={styles.empty}>Nenhuma ocorrência registrada</Text>
         }
+      />
+
+      <FinalizationModal
+        visible={showFinalizationModal}
+        onConfirm={handleFinalize}
+        onCancel={() => setShowFinalizationModal(false)}
       />
     </View>
   );
@@ -107,6 +129,11 @@ const styles = StyleSheet.create({
   date: {
     fontSize: 16,
     color: '#666',
+  },
+  inspector: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 4,
   },
   actions: {
     flexDirection: 'row',
