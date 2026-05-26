@@ -7,6 +7,7 @@ export interface Inspection {
   status: 'draft' | 'completed';
   inspector_name?: string;
   inspector_role?: string;
+  inspector_signature?: string;
   created_at: string;
 }
 

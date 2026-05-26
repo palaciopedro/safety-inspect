@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Inspection, Finding } from '../../types';
 import { FindingCard } from '../../components/FindingCard';
 import { FinalizationModal } from '../../components/FinalizationModal';
 import { db } from '../../services/database';
+import { formatDateBR } from '../../utils/date';
 
 export default function InspectionDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -30,16 +31,17 @@ export default function InspectionDetail() {
     }
   };
 
-  const handleFinalize = (inspectorName: string, inspectorRole: string) => {
-    finalize(inspectorName, inspectorRole);
+  const handleFinalize = (inspectorName: string, inspectorRole: string, signature: string) => {
+    finalize(inspectorName, inspectorRole, signature);
   };
 
-  const finalize = async (inspectorName: string, inspectorRole: string) => {
+  const finalize = async (inspectorName: string, inspectorRole: string, signature: string) => {
     try {
       await db.inspections.update(id, {
         status: 'completed',
         inspector_name: inspectorName,
         inspector_role: inspectorRole,
+        inspector_signature: signature,
       });
       setShowFinalizationModal(false);
       loadData();
@@ -63,11 +65,23 @@ export default function InspectionDetail() {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.unit}>{inspection.unit}</Text>
-        <Text style={styles.date}>{new Date(inspection.date).toLocaleDateString('pt-BR')}</Text>
+        <Text style={styles.date}>{formatDateBR(inspection.date)}</Text>
         {inspection.inspector_name && (
-          <Text style={styles.inspector}>
-            Inspetor: {inspection.inspector_name} - {inspection.inspector_role}
-          </Text>
+          <>
+            <Text style={styles.inspector}>
+              Inspetor: {inspection.inspector_name} - {inspection.inspector_role}
+            </Text>
+            {inspection.inspector_signature && (
+              <View style={styles.signaturePreview}>
+                <Text style={styles.signatureLabel}>Assinatura:</Text>
+                <Image
+                  source={{ uri: inspection.inspector_signature }}
+                  style={styles.signatureImage}
+                  resizeMode="contain"
+                />
+              </View>
+            )}
+          </>
         )}
       </View>
 
@@ -134,6 +148,23 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
     marginTop: 4,
+  },
+  signaturePreview: {
+    marginTop: 12,
+    gap: 4,
+  },
+  signatureLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#666',
+  },
+  signatureImage: {
+    width: 200,
+    height: 80,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    borderRadius: 4,
+    backgroundColor: '#fff',
   },
   actions: {
     flexDirection: 'row',

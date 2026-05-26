@@ -1,6 +1,7 @@
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { Inspection } from '../types';
 import { Svg, Path, Rect } from 'react-native-svg';
+import { formatDateBR } from '../utils/date';
 
 interface Props {
   inspection: Inspection;
@@ -42,7 +43,7 @@ export const InspectionCard = ({ inspection, onPress, onDelete }: Props) => {
           <Text style={styles.statusText}>{statusLabels[inspection.status]}</Text>
         </View>
       </View>
-      <Text style={styles.date}>{new Date(inspection.date).toLocaleDateString('pt-BR')}</Text>
+      <Text style={styles.date}>{formatDateBR(inspection.date)}</Text>
       
       <TouchableOpacity 
         style={styles.deleteButton} 

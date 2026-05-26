@@ -2,17 +2,18 @@ import { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { db } from '../services/database';
+import { getCurrentDateLocal } from '../utils/date';
 
 export default function NewInspection() {
   const router = useRouter();
   const [unit, setUnit] = useState('');
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [date, setDate] = useState(getCurrentDateLocal());
 
   const handleSubmit = async () => {
     try {
       await db.inspections.create({
         unit,
-        date: new Date(date).toISOString(),
+        date,
         status: 'draft',
       });
       router.back();
@@ -46,7 +47,7 @@ export default function NewInspection() {
         onPress={handleSubmit}
         disabled={!isValid}
       >
-        <Text style={styles.buttonText}>Criar Inspeção</Text>
+        <Text style={styles.buttonText}>Adicionar inspeção</Text>
       </TouchableOpacity>
     </ScrollView>
   );
