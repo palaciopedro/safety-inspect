@@ -7,13 +7,23 @@ import { getCurrentDateLocal } from '../utils/date';
 export default function NewInspection() {
   const router = useRouter();
   const [unit, setUnit] = useState('');
-  const [date, setDate] = useState(getCurrentDateLocal());
+  const formatDateBR = () => {
+  const today = new Date();
+
+  const day = String(today.getDate()).padStart(2, '0');
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const year = today.getFullYear();
+
+  return `${day}/${month}/${year}`;
+};
+
+const [date, setDate] = useState(formatDateBR());
 
   const handleSubmit = async () => {
     try {
       await db.inspections.create({
         unit,
-        date,
+        date: date.split('/').reverse().join('-'),
         status: 'draft',
       });
       router.back();
@@ -39,7 +49,7 @@ export default function NewInspection() {
         style={styles.input}
         value={date}
         onChangeText={setDate}
-        placeholder="AAAA-MM-DD"
+        placeholder="DD/MM/AAAA"
       />
 
       <TouchableOpacity
