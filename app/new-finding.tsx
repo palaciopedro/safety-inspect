@@ -4,6 +4,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { DropdownOption } from '../types';
 import { Dropdown } from '../components/Dropdown';
 import { RiskBadge } from '../components/RiskBadge';
+import { PhotoPicker } from '../components/PhotoPicker';
 import { calculateRiskScore, getRiskLevel } from '../utils/risk';
 import { db } from '../services/database';
 import {
@@ -24,6 +25,7 @@ export default function NewFinding() {
   const [frequency, setFrequency] = useState<DropdownOption | null>(null);
   const [probability, setProbability] = useState<DropdownOption | null>(null);
   const [exposure, setExposure] = useState<DropdownOption | null>(null);
+  const [photo, setPhoto] = useState<string | null>(null);
 
   const calculatedScore = useMemo(() => {
     if (!gravity || !frequency || !probability || !exposure) return 0;
@@ -58,6 +60,7 @@ export default function NewFinding() {
         exposure_value: exposure.value,
         calculated_score: calculatedScore,
         risk_level: riskLevel,
+        photo_uri: photo ?? undefined,
       });
       router.back();
     } catch (error) {
@@ -141,6 +144,12 @@ export default function NewFinding() {
         options={EXPOSURE_OPTIONS}
         selected={exposure}
         onSelect={setExposure}
+      />
+
+      <PhotoPicker
+        photo={photo}
+        onPhotoSelect={setPhoto}
+        onPhotoRemove={() => setPhoto(null)}
       />
 
       {calculatedScore > 0 && (

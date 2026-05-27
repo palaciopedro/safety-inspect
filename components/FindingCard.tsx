@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, Image } from 'react-native';
 import { Finding } from '../types';
 import { RiskBadge } from './RiskBadge';
 import { Svg, Path, Rect } from 'react-native-svg';
@@ -40,6 +40,13 @@ export const FindingCard = ({ finding, onDelete }: Props) => {
         <Text style={styles.value}>{finding.calculated_score.toFixed(2)}</Text>
       </View>
       
+      {finding.photo_uri && (
+        <Image
+          source={{ uri: finding.photo_uri }}
+          style={styles.photo}
+        />
+      )}
+      
       <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
         <TrashIcon />
       </TouchableOpacity>
@@ -80,6 +87,12 @@ const styles = StyleSheet.create({
   value: {
     fontSize: 12,
     color: '#666',
+  },
+  photo: {
+    width: '100%',
+    height: 120,
+    borderRadius: 6,
+    backgroundColor: '#f3f4f6',
   },
   deleteButton: {
     position: 'absolute',

@@ -32,7 +32,7 @@ export const db = {
       if (error) throw error;
       return data as Inspection;
     },
-
+    
     delete: async (id: string) => {
       const { error } = await supabase
         .from('inspections')
