@@ -19,6 +19,7 @@ export default function NewFinding() {
   const router = useRouter();
 
   const [riskDescription, setRiskDescription] = useState('');
+  const [sector, setSector] = useState('');
   const [whatToDo, setWhatToDo] = useState('');
   const [whyToDo, setWhyToDo] = useState('');
   const [gravity, setGravity] = useState<DropdownOption | null>(null);
@@ -40,6 +41,7 @@ export default function NewFinding() {
       await db.findings.create({
         inspection_id: inspectionId,
         risk_description: riskDescription,
+        sector,
         what_to_do: whatToDo,
         why_to_do: whyToDo,
         gravity_label: gravity.label,
@@ -62,13 +64,21 @@ export default function NewFinding() {
 
   const isValid =
     riskDescription.trim() &&
+    sector.trim() &&
     whatToDo.trim() &&
     whyToDo.trim() &&
-    gravity && frequency && probability && exposure &&
-    photos.length > 0;
+    gravity && frequency && probability && exposure;
 
   return (
     <ScrollView style={styles.container}>
+      <Text style={styles.label}>Setor</Text>
+      <TextInput
+        style={styles.input}
+        value={sector}
+        onChangeText={setSector}
+        placeholder="Setor responsável"
+      />
+
       <Text style={styles.label}>Descrição do Risco</Text>
       <TextInput
         style={styles.multiline}
@@ -142,6 +152,10 @@ const styles = StyleSheet.create({
   multiline: {
     backgroundColor: '#fff', borderWidth: 1, borderColor: '#e5e7eb',
     borderRadius: 8, padding: 12, fontSize: 16, minHeight: 80,
+  },
+  input: {
+    backgroundColor: '#fff', borderWidth: 1, borderColor: '#e5e7eb',
+    borderRadius: 8, padding: 12, fontSize: 16,
   },
   spacer: { height: 16 },
   result: {

@@ -37,6 +37,11 @@ export const FindingCard = ({ finding, onDelete }: Props) => {
       </View>
 
       <View style={styles.row}>
+        <Text style={styles.label}>Setor:</Text>
+        <Text style={styles.value}>{finding.sector}</Text>
+      </View>
+
+      <View style={styles.row}>
         <Text style={styles.label}>Pontuação:</Text>
         <Text style={styles.value}>{finding.calculated_score.toFixed(2)}</Text>
       </View>

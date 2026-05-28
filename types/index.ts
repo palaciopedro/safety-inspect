@@ -20,6 +20,7 @@ export interface Finding {
   id: string;
   inspection_id: string;
   risk_description: string;
+  sector: string;
   what_to_do: string;
   why_to_do: string;
   gravity_label: string;
