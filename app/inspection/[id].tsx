@@ -7,7 +7,7 @@ import { FinalizationModal } from '../../components/FinalizationModal';
 import { db } from '../../services/database';
 import { formatDateBR } from '../../utils/date';
 import { generateAndShareReport } from '../../services/report';
-import { generateAndShareExcel } from '../../services/excel';
+import { generateAndShareCSV } from '../../services/csv';
 
 export default function InspectionDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -76,7 +76,7 @@ export default function InspectionDetail() {
   const handleExcel = async () => {
     if (!inspection) return;
     try {
-      await generateAndShareExcel(inspection, findings);
+      await generateAndShareCSV(inspection, findings);
     } catch (error) {
       Alert.alert('Erro', 'Falha ao exportar planilha');
       console.error(error);
@@ -138,7 +138,7 @@ export default function InspectionDetail() {
               style={[styles.button, styles.excel]}
               onPress={handleExcel}
             >
-              <Text style={styles.buttonText}>Exportar Excel</Text>
+              <Text style={styles.buttonText}>Exportar Planilha</Text>
             </TouchableOpacity>
           </>
         )}
