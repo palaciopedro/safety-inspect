@@ -1,12 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image, Alert } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import { Inspection, Finding } from '../../types';
 import { FindingCard } from '../../components/FindingCard';
 import { FinalizationModal } from '../../components/FinalizationModal';
 import { db } from '../../services/database';
 import { formatDateBR } from '../../utils/date';
 import { generateAndShareReport } from '../../services/report';
+import { generateAndShareExcel } from '../../services/excel';
 
 export default function InspectionDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -15,9 +16,11 @@ export default function InspectionDetail() {
   const [findings, setFindings] = useState<Finding[]>([]);
   const [showFinalizationModal, setShowFinalizationModal] = useState(false);
 
-  useEffect(() => {
-    loadData();
-  }, [id]);
+  useFocusEffect(
+    useCallback(() => {
+      loadData();
+    }, [id])
+  );
 
   const loadData = async () => {
     try {
@@ -70,6 +73,16 @@ export default function InspectionDetail() {
     }
   };
 
+  const handleExcel = async () => {
+    if (!inspection) return;
+    try {
+      await generateAndShareExcel(inspection, findings);
+    } catch (error) {
+      Alert.alert('Erro', 'Falha ao exportar planilha');
+      console.error(error);
+    }
+  };
+
   if (!inspection) return null;
 
   return (
@@ -114,12 +127,20 @@ export default function InspectionDetail() {
         )}
 
         {inspection.status === 'completed' && (
-          <TouchableOpacity
-            style={[styles.button, styles.report]}
-            onPress={handleReport}
-          >
-            <Text style={styles.buttonText}>Baixar Relatório</Text>
-          </TouchableOpacity>
+          <>
+            <TouchableOpacity
+              style={[styles.button, styles.report]}
+              onPress={handleReport}
+            >
+              <Text style={styles.buttonText}>Baixar Relatório</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.button, styles.excel]}
+              onPress={handleExcel}
+            >
+              <Text style={styles.buttonText}>Exportar Excel</Text>
+            </TouchableOpacity>
+          </>
         )}
       </View>
 
@@ -203,6 +224,9 @@ const styles = StyleSheet.create({
   },
   report: {
     backgroundColor: '#7c3aed',
+  },
+  excel: {
+    backgroundColor: '#1a6b2f',
   },
   buttonText: {
     color: '#fff',
