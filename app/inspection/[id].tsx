@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Inspection, Finding } from '../../types';
 import { FindingCard } from '../../components/FindingCard';
 import { FinalizationModal } from '../../components/FinalizationModal';
 import { db } from '../../services/database';
 import { formatDateBR } from '../../utils/date';
+import { generateAndShareReport } from '../../services/report';
 
 export default function InspectionDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -21,10 +22,10 @@ export default function InspectionDetail() {
   const loadData = async () => {
     try {
       const [insp, finds] = await Promise.all([
-        db.inspections.list(),
+        db.inspections.getById(id),
         db.findings.listByInspection(id),
       ]);
-      setInspection(insp.find(i => i.id === id) || null);
+      setInspection(insp);
       setFindings(finds);
     } catch (error) {
       console.error(error);
@@ -55,6 +56,16 @@ export default function InspectionDetail() {
       await db.findings.delete(findingId);
       loadData();
     } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleReport = async () => {
+    if (!inspection) return;
+    try {
+      await generateAndShareReport(inspection, findings);
+    } catch (error) {
+      Alert.alert('Erro', 'Falha ao gerar relatório');
       console.error(error);
     }
   };
@@ -99,6 +110,15 @@ export default function InspectionDetail() {
             onPress={() => setShowFinalizationModal(true)}
           >
             <Text style={styles.buttonText}>Finalizar</Text>
+          </TouchableOpacity>
+        )}
+
+        {inspection.status === 'completed' && (
+          <TouchableOpacity
+            style={[styles.button, styles.report]}
+            onPress={handleReport}
+          >
+            <Text style={styles.buttonText}>Baixar Relatório</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -180,6 +200,9 @@ const styles = StyleSheet.create({
   },
   complete: {
     backgroundColor: '#22c55e',
+  },
+  report: {
+    backgroundColor: '#7c3aed',
   },
   buttonText: {
     color: '#fff',

@@ -32,13 +32,23 @@ export const db = {
       if (error) throw error;
       return data as Inspection;
     },
-    
+
     delete: async (id: string) => {
       const { error } = await supabase
         .from('inspections')
         .delete()
         .eq('id', id);
       if (error) throw error;
+    },
+
+    getById: async (id: string) => {
+      const { data, error } = await supabase
+        .from('inspections')
+        .select('*')
+        .eq('id', id)
+        .single();
+      if (error) throw error;
+      return data as Inspection;
     }
   },
   
