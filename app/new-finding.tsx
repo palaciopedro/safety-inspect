@@ -17,7 +17,7 @@ import {
 export default function NewFinding() {
   const { inspectionId } = useLocalSearchParams<{ inspectionId: string }>();
   const router = useRouter();
-  
+
   const [riskDescription, setRiskDescription] = useState('');
   const [whatToDo, setWhatToDo] = useState('');
   const [whyToDo, setWhyToDo] = useState('');
@@ -25,25 +25,17 @@ export default function NewFinding() {
   const [frequency, setFrequency] = useState<DropdownOption | null>(null);
   const [probability, setProbability] = useState<DropdownOption | null>(null);
   const [exposure, setExposure] = useState<DropdownOption | null>(null);
-  const [photo, setPhoto] = useState<string | null>(null);
+  const [photos, setPhotos] = useState<string[]>([]);
 
   const calculatedScore = useMemo(() => {
     if (!gravity || !frequency || !probability || !exposure) return 0;
-    return calculateRiskScore(
-      gravity.value,
-      frequency.value,
-      probability.value,
-      exposure.value
-    );
+    return calculateRiskScore(gravity.value, frequency.value, probability.value, exposure.value);
   }, [gravity, frequency, probability, exposure]);
 
-  const riskLevel = useMemo(() => {
-    return getRiskLevel(calculatedScore);
-  }, [calculatedScore]);
+  const riskLevel = useMemo(() => getRiskLevel(calculatedScore), [calculatedScore]);
 
   const handleSubmit = async () => {
     if (!gravity || !frequency || !probability || !exposure) return;
-    
     try {
       await db.findings.create({
         inspection_id: inspectionId,
@@ -60,7 +52,7 @@ export default function NewFinding() {
         exposure_value: exposure.value,
         calculated_score: calculatedScore,
         risk_level: riskLevel,
-        photo_uri: photo ?? undefined,
+        photos,
       });
       router.back();
     } catch (error) {
@@ -72,10 +64,8 @@ export default function NewFinding() {
     riskDescription.trim() &&
     whatToDo.trim() &&
     whyToDo.trim() &&
-    gravity &&
-    frequency &&
-    probability &&
-    exposure;
+    gravity && frequency && probability && exposure &&
+    photos.length > 0;
 
   return (
     <ScrollView style={styles.container}>
@@ -112,45 +102,15 @@ export default function NewFinding() {
         textAlignVertical="top"
       />
 
-      <Dropdown
-        label="Gravidade"
-        options={GRAVITY_OPTIONS}
-        selected={gravity}
-        onSelect={setGravity}
-      />
-
+      <Dropdown label="Gravidade" options={GRAVITY_OPTIONS} selected={gravity} onSelect={setGravity} />
       <View style={styles.spacer} />
-
-      <Dropdown
-        label="Frequência"
-        options={FREQUENCY_OPTIONS}
-        selected={frequency}
-        onSelect={setFrequency}
-      />
-
+      <Dropdown label="Frequência" options={FREQUENCY_OPTIONS} selected={frequency} onSelect={setFrequency} />
       <View style={styles.spacer} />
-
-      <Dropdown
-        label="Probabilidade"
-        options={PROBABILITY_OPTIONS}
-        selected={probability}
-        onSelect={setProbability}
-      />
-
+      <Dropdown label="Probabilidade" options={PROBABILITY_OPTIONS} selected={probability} onSelect={setProbability} />
       <View style={styles.spacer} />
+      <Dropdown label="Exposição" options={EXPOSURE_OPTIONS} selected={exposure} onSelect={setExposure} />
 
-      <Dropdown
-        label="Exposição"
-        options={EXPOSURE_OPTIONS}
-        selected={exposure}
-        onSelect={setExposure}
-      />
-
-      <PhotoPicker
-        photo={photo}
-        onPhotoSelect={setPhoto}
-        onPhotoRemove={() => setPhoto(null)}
-      />
+      <PhotoPicker photos={photos} onPhotosChange={setPhotos} />
 
       {calculatedScore > 0 && (
         <View style={styles.result}>
@@ -177,66 +137,24 @@ export default function NewFinding() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f9fafb',
-    padding: 16,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: '600',
-    marginTop: 16,
-    marginBottom: 8,
-  },
+  container: { flex: 1, backgroundColor: '#f9fafb', padding: 16 },
+  label: { fontSize: 14, fontWeight: '600', marginTop: 16, marginBottom: 8 },
   multiline: {
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    minHeight: 80,
+    backgroundColor: '#fff', borderWidth: 1, borderColor: '#e5e7eb',
+    borderRadius: 8, padding: 12, fontSize: 16, minHeight: 80,
   },
-  spacer: {
-    height: 16,
-  },
+  spacer: { height: 16 },
   result: {
-    backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 8,
-    gap: 12,
-    marginTop: 24,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
+    backgroundColor: '#fff', padding: 16, borderRadius: 8,
+    gap: 12, marginTop: 24, borderWidth: 1, borderColor: '#e5e7eb',
   },
-  resultRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  resultLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  resultScore: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#3b82f6',
-  },
+  resultRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  resultLabel: { fontSize: 16, fontWeight: '600' },
+  resultScore: { fontSize: 18, fontWeight: '700', color: '#3b82f6' },
   button: {
-    backgroundColor: '#3b82f6',
-    padding: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 24,
-    marginBottom: 32,
+    backgroundColor: '#3b82f6', padding: 16, borderRadius: 8,
+    alignItems: 'center', marginTop: 24, marginBottom: 32,
   },
-  disabled: {
-    opacity: 0.5,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
+  disabled: { opacity: 0.5 },
+  buttonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
 });

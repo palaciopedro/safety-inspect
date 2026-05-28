@@ -1,119 +1,107 @@
+import { View, Text, Image, TouchableOpacity, StyleSheet, Alert, FlatList, ActivityIndicator } from 'react-native';
 import { useState } from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import { processImage } from '../utils/image';
 
 interface Props {
-  photo: string | null;
-  onPhotoSelect: (uri: string) => void;
-  onPhotoRemove: () => void;
+  photos: string[];
+  onPhotosChange: (photos: string[]) => void;
 }
 
-export const PhotoPicker = ({ photo, onPhotoSelect, onPhotoRemove }: Props) => {
+export const PhotoPicker = ({ photos, onPhotosChange }: Props) => {
   const [loading, setLoading] = useState(false);
 
-  const requestPermissions = async () => {
-    const { status } = await ImagePicker.requestCameraPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Permissão negada', 'Permissão de câmera é necessária');
-      return false;
+  const pickImages = async (source: 'camera' | 'gallery') => {
+    if (source === 'camera') {
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permissão negada', 'Permissão de câmera é necessária');
+        return;
+      }
     }
-    return true;
-  };
-
-  const handleCamera = async () => {
-    const hasPermission = await requestPermissions();
-    if (!hasPermission) return;
 
     setLoading(true);
     try {
-      const result = await ImagePicker.launchCameraAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [4, 3],
-        quality: 0.8,
-      });
+      const result = source === 'camera'
+        ? await ImagePicker.launchCameraAsync({ quality: 1 })
+        : await ImagePicker.launchImageLibraryAsync({
+            allowsMultipleSelection: true,
+            quality: 1,
+          });
 
-      if (!result.canceled && result.assets[0]) {
-        onPhotoSelect(result.assets[0].uri);
+      if (!result.canceled && result.assets.length > 0) {
+        const processed = await Promise.all(
+          result.assets.map(a => processImage(a.uri))
+        );
+        onPhotosChange([...photos, ...processed]);
       }
     } catch (error) {
-      Alert.alert('Erro', 'Falha ao capturar foto');
+      Alert.alert('Erro', 'Falha ao processar imagem');
       console.error(error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleGallery = async () => {
-    setLoading(true);
-    try {
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [4, 3],
-        quality: 0.8,
-      });
-
-      if (!result.canceled && result.assets[0]) {
-        onPhotoSelect(result.assets[0].uri);
-      }
-    } catch (error) {
-      Alert.alert('Erro', 'Falha ao selecionar foto');
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleRemove = () => {
+  const removePhoto = (index: number) => {
     Alert.alert(
       'Remover Foto',
-      'Tem certeza que deseja remover a foto?',
+      'Deseja remover esta foto?',
       [
         { text: 'Cancelar', style: 'cancel' },
-        { text: 'Remover', style: 'destructive', onPress: onPhotoRemove }
+        {
+          text: 'Remover',
+          style: 'destructive',
+          onPress: () => onPhotosChange(photos.filter((_, i) => i !== index)),
+        },
       ]
     );
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>Foto do Local (opcional)</Text>
+      <Text style={styles.label}>Fotos do Local</Text>
 
-      {photo ? (
-        <View style={styles.previewContainer}>
-          <Image source={{ uri: photo }} style={styles.preview} />
-          <TouchableOpacity
-            style={styles.removeButton}
-            onPress={handleRemove}
-            disabled={loading}
-          >
-            <Text style={styles.removeText}>Remover</Text>
-          </TouchableOpacity>
-        </View>
-      ) : (
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>Nenhuma foto selecionada</Text>
-        </View>
+      {photos.length > 0 && (
+        <FlatList
+          data={photos}
+          keyExtractor={(_, i) => i.toString()}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.list}
+          renderItem={({ item, index }) => (
+            <View style={styles.photoWrapper}>
+              <Image source={{ uri: item }} style={styles.photo} />
+              <TouchableOpacity
+                style={styles.removeButton}
+                onPress={() => removePhoto(index)}
+              >
+                <Text style={styles.removeText}>X</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        />
       )}
 
       <View style={styles.buttons}>
         <TouchableOpacity
-          style={[styles.button, styles.cameraButton]}
-          onPress={handleCamera}
+          style={[styles.button, styles.cameraButton, loading && styles.disabled]}
+          onPress={() => pickImages('camera')}
           disabled={loading}
         >
           <Text style={styles.buttonText}>Câmera</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.button, styles.galleryButton]}
-          onPress={handleGallery}
+          style={[styles.button, styles.galleryButton, loading && styles.disabled]}
+          onPress={() => pickImages('gallery')}
           disabled={loading}
         >
           <Text style={styles.buttonText}>Galeria</Text>
         </TouchableOpacity>
       </View>
+
+      {loading && <ActivityIndicator style={styles.loader} color="#3b82f6" />}
     </View>
   );
 };
@@ -127,41 +115,34 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: 8,
   },
-  previewContainer: {
+  list: {
     marginBottom: 12,
-    gap: 8,
   },
-  preview: {
-    width: '100%',
-    height: 200,
+  photoWrapper: {
+    position: 'relative',
+    marginRight: 8,
+  },
+  photo: {
+    width: 100,
+    height: 100,
     borderRadius: 8,
     backgroundColor: '#f3f4f6',
   },
   removeButton: {
-    backgroundColor: '#ef4444',
-    padding: 10,
-    borderRadius: 8,
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    backgroundColor: 'rgba(239,68,68,0.9)',
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    justifyContent: 'center',
     alignItems: 'center',
   },
   removeText: {
     color: '#fff',
-    fontWeight: '600',
-    fontSize: 14,
-  },
-  emptyContainer: {
-    height: 120,
-    borderWidth: 2,
-    borderColor: '#e5e7eb',
-    borderStyle: 'dashed',
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 12,
-    backgroundColor: '#f9fafb',
-  },
-  emptyText: {
-    fontSize: 13,
-    color: '#999',
+    fontSize: 11,
+    fontWeight: '700',
   },
   buttons: {
     flexDirection: 'row',
@@ -183,5 +164,11 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: '600',
     fontSize: 14,
+  },
+  disabled: {
+    opacity: 0.5,
+  },
+  loader: {
+    marginTop: 8,
   },
 });

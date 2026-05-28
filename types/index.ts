@@ -32,6 +32,6 @@ export interface Finding {
   exposure_value: number;
   calculated_score: number;
   risk_level: RiskLevel;
-  photo_uri?: string;
+  photos: string[];
   created_at: string;
 }

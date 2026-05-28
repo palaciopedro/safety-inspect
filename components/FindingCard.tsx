@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, Alert, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, Image, FlatList } from 'react-native';
 import { Finding } from '../types';
 import { RiskBadge } from './RiskBadge';
 import { Svg, Path, Rect } from 'react-native-svg';
@@ -24,7 +24,7 @@ export const FindingCard = ({ finding, onDelete }: Props) => {
       'Tem certeza que deseja excluir esta ocorrência? Esta ação não pode ser desfeita.',
       [
         { text: 'Cancelar', style: 'cancel' },
-        { text: 'Excluir', style: 'destructive', onPress: onDelete }
+        { text: 'Excluir', style: 'destructive', onPress: onDelete },
       ]
     );
   };
@@ -35,18 +35,25 @@ export const FindingCard = ({ finding, onDelete }: Props) => {
         <Text style={styles.description}>{finding.risk_description}</Text>
         <RiskBadge level={finding.risk_level} />
       </View>
+
       <View style={styles.row}>
         <Text style={styles.label}>Pontuação:</Text>
         <Text style={styles.value}>{finding.calculated_score.toFixed(2)}</Text>
       </View>
-      
-      {finding.photo_uri && (
-        <Image
-          source={{ uri: finding.photo_uri }}
-          style={styles.photo}
+
+      {finding.photos?.length > 0 && (
+        <FlatList
+          data={finding.photos}
+          keyExtractor={(_, i) => i.toString()}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.photoList}
+          renderItem={({ item }) => (
+            <Image source={{ uri: item }} style={styles.photo} />
+          )}
         />
       )}
-      
+
       <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
         <TrashIcon />
       </TouchableOpacity>
@@ -70,34 +77,17 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     gap: 8,
   },
-  description: {
-    fontSize: 14,
-    fontWeight: '500',
-    flex: 1,
-  },
-  row: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  label: {
-    fontSize: 12,
-    color: '#666',
-    fontWeight: '600',
-  },
-  value: {
-    fontSize: 12,
-    color: '#666',
-  },
+  description: { fontSize: 14, fontWeight: '500', flex: 1 },
+  row: { flexDirection: 'row', gap: 8 },
+  label: { fontSize: 12, color: '#666', fontWeight: '600' },
+  value: { fontSize: 12, color: '#666' },
+  photoList: { marginTop: 4 },
   photo: {
-    width: '100%',
-    height: 120,
+    width: 80,
+    height: 80,
     borderRadius: 6,
+    marginRight: 6,
     backgroundColor: '#f3f4f6',
   },
-  deleteButton: {
-    position: 'absolute',
-    bottom: 8,
-    right: 8,
-    padding: 4,
-  },
+  deleteButton: { position: 'absolute', bottom: 8, right: 8, padding: 4 },
 });
