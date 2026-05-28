@@ -56,7 +56,7 @@ export default function NewFinding() {
         risk_level: riskLevel,
         photos,
       });
-      router.back();
+      router.replace(`/inspection/${inspectionId}`);
     } catch (error) {
       console.error(error);
     }
@@ -71,14 +71,6 @@ export default function NewFinding() {
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.label}>Setor</Text>
-      <TextInput
-        style={styles.input}
-        value={sector}
-        onChangeText={setSector}
-        placeholder="Setor responsável"
-      />
-
       <Text style={styles.label}>Descrição do Risco</Text>
       <TextInput
         style={styles.multiline}
@@ -88,6 +80,14 @@ export default function NewFinding() {
         multiline
         numberOfLines={3}
         textAlignVertical="top"
+      />
+
+      <Text style={styles.label}>Setor</Text>
+      <TextInput
+        style={styles.input}
+        value={sector}
+        onChangeText={setSector}
+        placeholder="Setor responsável"
       />
 
       <Text style={styles.label}>O Que Tem Que Ser Feito</Text>

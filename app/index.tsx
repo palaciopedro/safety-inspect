@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useFocusEffect } from 'expo-router';
 import { Inspection } from '../types';
 import { InspectionCard } from '../components/InspectionCard';
 import { db } from '../services/database';
@@ -10,9 +11,11 @@ export default function Home() {
   const [inspections, setInspections] = useState<Inspection[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadInspections();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      loadInspections();
+    }, [])
+  );
 
   const loadInspections = async () => {
     try {
