@@ -138,7 +138,7 @@ export default function InspectionDetail() {
               style={[styles.button, styles.excel]}
               onPress={handleExcel}
             >
-              <Text style={styles.buttonText}>Exportar Planilha</Text>
+              <Text style={styles.buttonText}>Exportar Excel</Text>
             </TouchableOpacity>
           </>
         )}
@@ -148,7 +148,11 @@ export default function InspectionDetail() {
         data={findings}
         keyExtractor={item => item.id}
         renderItem={({ item }) => (
-          <FindingCard finding={item} onDelete={() => handleDeleteFinding(item.id)} />
+          <FindingCard
+            finding={item}
+            onDelete={() => handleDeleteFinding(item.id)}
+            onEdit={() => router.push(`/new-finding?inspectionId=${id}&findingId=${item.id}`)}
+          />
         )}
         contentContainerStyle={styles.list}
         ListEmptyComponent={

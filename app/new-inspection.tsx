@@ -1,31 +1,32 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { db } from '../services/database';
 import { getCurrentDateLocal } from '../utils/date';
 
 export default function NewInspection() {
   const router = useRouter();
+  const { id } = useLocalSearchParams<{ id?: string }>();
+  const isEditing = !!id;
+
   const [unit, setUnit] = useState('');
-  const formatDateBR = () => {
-  const today = new Date();
+  const [date, setDate] = useState(getCurrentDateLocal());
 
-  const day = String(today.getDate()).padStart(2, '0');
-  const month = String(today.getMonth() + 1).padStart(2, '0');
-  const year = today.getFullYear();
-
-  return `${day}/${month}/${year}`;
-};
-
-const [date, setDate] = useState(formatDateBR());
+  useEffect(() => {
+    if (!id) return;
+    db.inspections.getById(id).then(inspection => {
+      setUnit(inspection.unit);
+      setDate(inspection.date);
+    }).catch(console.error);
+  }, [id]);
 
   const handleSubmit = async () => {
     try {
-      await db.inspections.create({
-        unit,
-        date: date.split('/').reverse().join('-'),
-        status: 'draft',
-      });
+      if (isEditing) {
+        await db.inspections.update(id!, { unit, date });
+      } else {
+        await db.inspections.create({ unit, date, status: 'draft' });
+      }
       router.back();
     } catch (error) {
       console.error(error);
@@ -49,7 +50,7 @@ const [date, setDate] = useState(formatDateBR());
         style={styles.input}
         value={date}
         onChangeText={setDate}
-        placeholder="DD/MM/AAAA"
+        placeholder="AAAA-MM-DD"
       />
 
       <TouchableOpacity
@@ -57,45 +58,25 @@ const [date, setDate] = useState(formatDateBR());
         onPress={handleSubmit}
         disabled={!isValid}
       >
-        <Text style={styles.buttonText}>Adicionar inspeção</Text>
+        <Text style={styles.buttonText}>
+          {isEditing ? 'Salvar alterações' : 'Adicionar inspeção'}
+        </Text>
       </TouchableOpacity>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f9fafb',
-    padding: 16,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: '600',
-    marginTop: 16,
-    marginBottom: 8,
-  },
+  container: { flex: 1, backgroundColor: '#f9fafb', padding: 16 },
+  label: { fontSize: 14, fontWeight: '600', marginTop: 16, marginBottom: 8 },
   input: {
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
+    backgroundColor: '#fff', borderWidth: 1, borderColor: '#e5e7eb',
+    borderRadius: 8, padding: 12, fontSize: 16,
   },
   button: {
-    backgroundColor: '#3b82f6',
-    padding: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 24,
+    backgroundColor: '#3b82f6', padding: 16, borderRadius: 8,
+    alignItems: 'center', marginTop: 24,
   },
-  disabled: {
-    opacity: 0.5,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
+  disabled: { opacity: 0.5 },
+  buttonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
 });

@@ -79,6 +79,27 @@ export const db = {
         .delete()
         .eq('id', id);
       if (error) throw error;
+    },
+
+    update: async (id: string, updates: Partial<Finding>) => {
+      const { data, error } = await supabase
+        .from('findings')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data as Finding;
+    },
+
+    getById: async (id: string) => {
+      const { data, error } = await supabase
+        .from('findings')
+        .select('*')
+        .eq('id', id)
+        .single();
+      if (error) throw error;
+      return data as Finding;
     }
   }
 };

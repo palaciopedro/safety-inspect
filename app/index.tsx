@@ -57,6 +57,7 @@ export default function Home() {
             inspection={item}
             onPress={() => router.push(`/inspection/${item.id}`)}
             onDelete={() => handleDelete(item.id)}
+            onEdit={() => router.push(`/new-inspection?id=${item.id}`)}
           />
         )}
         contentContainerStyle={styles.list}
