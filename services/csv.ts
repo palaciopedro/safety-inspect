@@ -46,15 +46,15 @@ export const generateAndShareCSV = async (
         '',
         '',
         '',
-        'Não iniciada',
+        '',
         '',
         '',
         finding.gravity_value,
         finding.frequency_value,
         finding.probability_value,
         finding.exposure_value,
-        hrn.toFixed(2),
-        finding.risk_level,
+        hrn.toFixed(2).replace('.', ','),
+        '',
         '',
         '',
       ];
@@ -72,9 +72,11 @@ export const generateAndShareCSV = async (
       FileSystem.cacheDirectory +
       `inspecao_${inspection.id}.csv`;
 
+    const content = '\uFEFF' + csvContent;
+
     await FileSystem.writeAsStringAsync(
       fileUri,
-      '\uFEFF' + csvContent,
+      content,
       {
         encoding: FileSystem.EncodingType.UTF8,
       }

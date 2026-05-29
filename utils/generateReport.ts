@@ -123,7 +123,7 @@ export const generateReportHTML = (
   <div class="cover page-break">
     <div style="margin-bottom:40px;">
       <div style="font-size:28px;font-weight:900;color:#8B1A1A;letter-spacing:2px;">Nome Empresa</div>
-      <div style="font-size:11px;color:#555;">Nome Empresa - Cooperativa Agropecuária e Industrial</div>
+      <div style="font-size:11px;color:#555;">Nome Empresa</div>
     </div>
 
     <div style="margin-top:80px;">
