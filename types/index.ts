@@ -23,7 +23,8 @@ export interface Finding {
   sector: string;
   what_to_do: string;
   why_to_do: string;
-  gravity_label: string;
+  legal_requirement: string;
+  gravity_label: string;  
   gravity_value: number;
   frequency_label: string;
   frequency_value: number;

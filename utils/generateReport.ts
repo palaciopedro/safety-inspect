@@ -67,6 +67,9 @@ const findingBlock = (finding: Finding, index: number): string => {
       <p style="margin:4px 0;font-size:13px;">
         <strong>Por que:</strong> ${finding.why_to_do}
       </p>
+      <p style="margin:4px 0;font-size:13px;">
+        <strong>Requerimento Legal:</strong> ${finding.legal_requirement}
+      </p>
 
       <div style="margin-top:8px;font-size:12px;color:#555;">
         <span>G: ${finding.gravity_value} &nbsp;|&nbsp;</span>
@@ -100,8 +103,8 @@ export const generateReportHTML = (
   const today = formatDateBR(inspection.date);
   const name = settings.companyName || 'Nome Empresa';
   const logoHTML = settings.companyLogo
-  ? `<img src="${settings.companyLogo}" style="width:375px;height:125px;object-fit:contain;margin-bottom:8px;" />`
-  : '';
+    ? `<img src="${settings.companyLogo}" style="height:60px;object-fit:contain;margin-bottom:8px;" />`
+    : '';
 
   return `
 <!DOCTYPE html>
@@ -129,7 +132,6 @@ export const generateReportHTML = (
   <div class="cover page-break">
     <div style="margin-bottom:40px;">
       ${logoHTML}
-      <div style="font-size:28px;font-weight:900;color:#8B1A1A;letter-spacing:2px;">${name}</div>
     </div>
 
     <div style="margin-top:80px;">
@@ -139,23 +141,19 @@ export const generateReportHTML = (
     </div>
 
     <div style="margin-top:80px;text-align:right;">
-      <p>Período: <strong>${today}</strong></p>
+      <p>Data: <strong>${today}</strong></p>
     </div>
   </div>
 
   <!-- SUMMARY PAGE -->
   <div class="page page-break">
     <div class="header-row">
-      <div>
-        <div style="font-size:14px;font-weight:900;color:#8B1A1A;">${name}</div>
-      </div>
+      <div></div>
       <div style="text-align:center;">
         <div style="font-size:14px;font-weight:bold;">Relatório da Inspeção visual</div>
         <div style="font-size:16px;font-weight:900;">${inspection.unit}</div>
       </div>
-      <div>
-        <div style="font-size:14px;font-weight:900;color:#8B1A1A;">${name}</div>
-      </div>
+      <div></div>
     </div>
 
     ${inspection.inspector_name ? `
@@ -183,16 +181,6 @@ export const generateReportHTML = (
         ${findings.map(summaryRow).join('')}
       </tbody>
     </table>
-
-    ${inspection.inspector_signature ? `
-    <div style="margin-top:40px;">
-      <p style="font-size:12px;color:#555;margin-bottom:8px;">Assinatura do Inspetor:</p>
-      <img src="${inspection.inspector_signature}"
-           style="height:80px;border:1px solid #ddd;border-radius:4px;background:#fff;" />
-      <p style="font-size:12px;margin-top:4px;">
-        ${inspection.inspector_name} — ${inspection.inspector_role}
-      </p>
-    </div>` : ''}
   </div>
 
   <!-- DETAIL PAGES -->
@@ -202,6 +190,16 @@ export const generateReportHTML = (
     </h3>
 
     ${findings.map(findingBlock).join('<hr class="divider" />')}
+
+    ${inspection.inspector_signature ? `
+    <div style="display:flex;justify-content:flex-end;margin-top:48px;">
+      <div style="text-align:center;">
+        <img src="${inspection.inspector_signature}"
+             style="height:80px;display:block;margin:0 auto;border:1px solid #ddd;border-radius:4px;background:#fff;" />
+        <p style="font-size:13px;font-weight:600;margin-top:8px;">${inspection.inspector_name ?? ''}</p>
+        <p style="font-size:12px;color:#555;margin-top:2px;">${inspection.inspector_role ?? ''}</p>
+      </div>
+    </div>` : ''}
   </div>
 
 </body>

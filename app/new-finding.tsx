@@ -26,6 +26,7 @@ export default function NewFinding() {
   const [sector, setSector] = useState('');
   const [whatToDo, setWhatToDo] = useState('');
   const [whyToDo, setWhyToDo] = useState('');
+  const [legalRequirement, setLegalRequirement] = useState('');
   const [gravity, setGravity] = useState<DropdownOption | null>(null);
   const [frequency, setFrequency] = useState<DropdownOption | null>(null);
   const [probability, setProbability] = useState<DropdownOption | null>(null);
@@ -39,6 +40,7 @@ export default function NewFinding() {
       setSector(f.sector);
       setWhatToDo(f.what_to_do);
       setWhyToDo(f.why_to_do);
+      setLegalRequirement(f.legal_requirement ?? '');
       setGravity({ label: f.gravity_label, value: f.gravity_value });
       setFrequency({ label: f.frequency_label, value: f.frequency_value });
       setProbability({ label: f.probability_label, value: f.probability_value });
@@ -62,6 +64,7 @@ export default function NewFinding() {
       sector,
       what_to_do: whatToDo,
       why_to_do: whyToDo,
+      legal_requirement: legalRequirement,
       gravity_label: gravity.label,
       gravity_value: gravity.value,
       frequency_label: frequency.label,
@@ -92,6 +95,7 @@ export default function NewFinding() {
     sector.trim() &&
     whatToDo.trim() &&
     whyToDo.trim() &&
+    legalRequirement.trim() &&
     gravity && frequency && probability && exposure &&
     photos.length > 0;
 
@@ -133,6 +137,17 @@ export default function NewFinding() {
         value={whyToDo}
         onChangeText={setWhyToDo}
         placeholder="Justificativa"
+        multiline
+        numberOfLines={3}
+        textAlignVertical="top"
+      />
+
+      <Text style={styles.label}>Requerimento Legal</Text>
+      <TextInput
+        style={styles.multiline}
+        value={legalRequirement}
+        onChangeText={setLegalRequirement}
+        placeholder="Ex: NR-15"
         multiline
         numberOfLines={3}
         textAlignVertical="top"
