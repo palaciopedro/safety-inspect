@@ -120,7 +120,8 @@ export const generateReportHTML = (
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: Arial, sans-serif; color: #222; font-size: 13px; }
   h1, h2, h3 { font-family: Arial, sans-serif; }
-  .page { padding: 40px; max-width: 800px; margin: 0 auto; }
+  .page { padding: 40px; max-width: 800px; margin: 0 auto; page-break-after: always; }
+  .page:last-child { page-break-after: auto; }
   .cover { text-align: center; padding: 80px 40px; }
   .divider { border: none; border-top: 1px solid #ccc; margin: 16px 0; }
   table { border-collapse: collapse; width: 100%; }
@@ -217,14 +218,17 @@ export const generateReportHTML = (
     </table>
   </div>
 
-    <!-- DETAIL PAGES -->
-  <div class="page">
-    <h3 style="text-align:center;font-size:14px;text-transform:uppercase;margin-bottom:24px;">
-      Detalhamento da Inspeção Visual
-    </h3>
+    ${findings
+      .map((finding, index) => `
+          <div class="page">
+            <h3 style="text-align:center;font-size:14px;text-transform:uppercase;margin-bottom:24px;">
+              Detalhamento da Inspeção Visual
+            </h3>
 
-    ${findings.map(findingBlock).join('<hr class="divider" />')}
-  </div>
+            ${findingBlock(finding, index)}
+          </div>
+        `)
+      .join('')}
 
   <!-- SIGNATURE PAGE -->
   <div class="page signature-page">

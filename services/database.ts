@@ -58,7 +58,7 @@ export const db = {
         .from('findings')
         .select('*')
         .eq('inspection_id', inspectionId)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: true });
       if (error) throw error;
       return data as Finding[];
     },

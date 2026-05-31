@@ -5,25 +5,16 @@ import { Inspection, Finding } from '../types';
 
 const HEADERS = [
   'O que fazer',
-  'Por que?',
+  'Por que',
   'Requisito Legal',
-  'Onde?',
-  'Quem?',
+  'Onde',
+  'Quem',
   'Prazo início',
-  'Prazo término',
-  'Início',
-  'Realizado',
-  'Status',
-  'Nº O.S. Engeman',
-  'Valor',
   'Grav',
   'Freq',
   'Prob',
   'Exp',
   'HRN',
-  'Grau de risco',
-  'Recurso',
-  'Observações',
 ];
 
 export const generateAndShareCSV = async (
@@ -45,20 +36,11 @@ export const generateAndShareCSV = async (
         finding.sector ?? '',
         inspection.inspector_name ?? '',
         inspection.date,
-        '',
-        '',
-        '',
-        '',
-        '',
-        '',
         finding.gravity_value,
         finding.frequency_value,
         finding.probability_value,
         finding.exposure_value,
         hrn.toFixed(2).replace('.', ','),
-        '',
-        '',
-        '',
       ];
     });
 
@@ -68,7 +50,7 @@ export const generateAndShareCSV = async (
           .map((cell) => `"${String(cell ?? '').replace(/"/g, '""')}"`)
           .join(';')
       )
-      .join('\n');
+      .join('\r\n');
 
     const fileUri =
       FileSystem.cacheDirectory +
@@ -85,7 +67,7 @@ export const generateAndShareCSV = async (
     );
 
     await Sharing.shareAsync(fileUri, {
-      mimeType: 'text/csv',
+      mimeType: 'text/csv;charset=utf-8',
       dialogTitle: 'Exportar Planilha',
     });
   } catch (error) {
