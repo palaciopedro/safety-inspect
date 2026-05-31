@@ -2,12 +2,14 @@ import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import { Inspection, Finding } from '../types';
 import { generateReportHTML } from '../utils/generateReport';
+import { settingsService } from './settings';
 
 export const generateAndShareReport = async (
   inspection: Inspection,
   findings: Finding[]
 ): Promise<void> => {
-  const html = generateReportHTML(inspection, findings);
+  const settings = await settingsService.load().catch(() => ({ companyName: '', companyLogo: null }));
+  const html = generateReportHTML(inspection, findings, settings);
 
   const { uri } = await Print.printToFileAsync({ html, base64: false });
 

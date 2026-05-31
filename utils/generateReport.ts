@@ -1,6 +1,7 @@
 import { Inspection, Finding } from '../types';
 import { getRiskColor } from './risk';
 import { formatDateBR } from './date';
+import { AppSettings } from '../services/settings';
 
 const riskLabels: Record<string, string> = {
   raro: 'Raro',
@@ -93,9 +94,14 @@ const summaryRow = (finding: Finding, index: number): string => {
 
 export const generateReportHTML = (
   inspection: Inspection,
-  findings: Finding[]
+  findings: Finding[],
+  settings: AppSettings = { companyName: '', companyLogo: null }
 ): string => {
   const today = formatDateBR(inspection.date);
+  const name = settings.companyName || 'Nome Empresa';
+  const logoHTML = settings.companyLogo
+  ? `<img src="${settings.companyLogo}" style="width:375px;height:125px;object-fit:contain;margin-bottom:8px;" />`
+  : '';
 
   return `
 <!DOCTYPE html>
@@ -122,13 +128,13 @@ export const generateReportHTML = (
   <!-- COVER PAGE -->
   <div class="cover page-break">
     <div style="margin-bottom:40px;">
-      <div style="font-size:28px;font-weight:900;color:#8B1A1A;letter-spacing:2px;">Nome Empresa</div>
-      <div style="font-size:11px;color:#555;">Nome Empresa</div>
+      ${logoHTML}
+      <div style="font-size:28px;font-weight:900;color:#8B1A1A;letter-spacing:2px;">${name}</div>
     </div>
 
     <div style="margin-top:80px;">
       <h1 style="font-size:32px;font-weight:900;">${inspection.unit}</h1>
-      <h2 style="font-size:20px;font-weight:bold;margin-top:8px;">Nome Empresa</h2>
+      <h2 style="font-size:20px;font-weight:bold;margin-top:8px;">${name}</h2>
       <h2 style="font-size:20px;font-weight:bold;">Relatório da Inspeção visual</h2>
     </div>
 
@@ -141,14 +147,14 @@ export const generateReportHTML = (
   <div class="page page-break">
     <div class="header-row">
       <div>
-        <div style="font-size:14px;font-weight:900;color:#8B1A1A;">Nome Empresa</div>
+        <div style="font-size:14px;font-weight:900;color:#8B1A1A;">${name}</div>
       </div>
       <div style="text-align:center;">
         <div style="font-size:14px;font-weight:bold;">Relatório da Inspeção visual</div>
         <div style="font-size:16px;font-weight:900;">${inspection.unit}</div>
       </div>
       <div>
-        <div style="font-size:14px;font-weight:900;color:#8B1A1A;">Nome Empresa</div>
+        <div style="font-size:14px;font-weight:900;color:#8B1A1A;">${name}</div>
       </div>
     </div>
 

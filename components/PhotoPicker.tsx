@@ -31,7 +31,7 @@ export const PhotoPicker = ({ photos, onPhotosChange }: Props) => {
 
       if (!result.canceled && result.assets.length > 0) {
         const processed = await Promise.all(
-          result.assets.map(a => processImage(a.uri))
+          result.assets.map(a => processImage(a.uri, (a as any).mimeType))
         );
         onPhotosChange([...photos, ...processed]);
       }
