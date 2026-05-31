@@ -13,32 +13,39 @@ const riskLabels: Record<string, string> = {
 
 const photoGrid = (photos: string[]): string => {
   if (!photos?.length) return '';
-  const items = photos
-    .map(
-      uri => `
-      <td style="padding:4px;">
-        <img src="${uri}" style="width:240px;height:180px;object-fit:cover;border-radius:4px;" />
-      </td>`
-    )
-    .join('');
 
-  // Group into rows of 2
   const rows: string[] = [];
+
   for (let i = 0; i < photos.length; i += 2) {
     const pair = photos.slice(i, i + 2);
+
     rows.push(`
       <tr>
         ${pair.map(uri => `
-          <td style="padding:4px;">
-            <img src="${uri}" style="width:240px;height:180px;object-fit:cover;border-radius:4px;" />
-          </td>`).join('')}
-      </tr>`);
+          <td style="width:50%;padding:6px;text-align:center;vertical-align:top;">
+            <img
+              src="${uri}"
+              style="
+                width:100%;
+                max-width:260px;
+                max-height:200px;
+                object-fit:contain;
+                border:1px solid #ddd;
+                border-radius:4px;
+                background:#fff;
+              "
+            />
+          </td>
+        `).join('')}
+      </tr>
+    `);
   }
 
   return `
-    <table style="margin:12px 0;">
+    <table style="width:100%;margin-top:16px;border-collapse:collapse;">
       ${rows.join('')}
-    </table>`;
+    </table>
+  `;
 };
 
 const findingBlock = (finding: Finding, index: number): string => {
@@ -110,19 +117,53 @@ export const generateReportHTML = (
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: Arial, sans-serif; color: #222; font-size: 13px; }
-    h1, h2, h3 { font-family: Arial, sans-serif; }
-    .page { padding: 40px; max-width: 800px; margin: 0 auto; }
-    .cover { text-align: center; padding: 80px 40px; }
-    .divider { border: none; border-top: 1px solid #ccc; margin: 16px 0; }
-    table { border-collapse: collapse; width: 100%; }
-    th { background: #f0f0f0; padding: 8px; text-align: center; font-size: 13px; }
-    td { border-bottom: 1px solid #eee; }
-    .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-    .page-break { page-break-after: always; }
-  </style>
-</head>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Arial, sans-serif; color: #222; font-size: 13px; }
+  h1, h2, h3 { font-family: Arial, sans-serif; }
+  .page { padding: 40px; max-width: 800px; margin: 0 auto; }
+  .cover { text-align: center; padding: 80px 40px; }
+  .divider { border: none; border-top: 1px solid #ccc; margin: 16px 0; }
+  table { border-collapse: collapse; width: 100%; }
+  th { background: #f0f0f0; padding: 8px; text-align: center; font-size: 13px; }
+  td { border-bottom: 1px solid #eee; }
+  .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  .page-break { page-break-after: always; }
+
+  .signature-page {
+    page-break-before: always;
+  }
+
+  .signature-container {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+
+  .signature-card {
+    flex: 1;
+    min-width: 156px;
+    max-width: 192px;
+    text-align: center;
+  }
+
+  .signature-box {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: #fff;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+  }
+
+  .signature-box img {
+    max-width: 100%;
+    max-height: 90px;
+    object-fit: contain;
+  }
+</style>
 <body>
 
   <!-- COVER PAGE -->
@@ -133,7 +174,6 @@ export const generateReportHTML = (
 
     <div style="margin-top:80px;">
       <h1 style="font-size:32px;font-weight:900;">${inspection.unit}</h1>
-      <h2 style="font-size:20px;font-weight:bold;margin-top:8px;">${name}</h2>
       <h2 style="font-size:20px;font-weight:bold;">Relatório da Inspeção visual</h2>
     </div>
 
@@ -177,33 +217,75 @@ export const generateReportHTML = (
     </table>
   </div>
 
-  <!-- DETAIL PAGES -->
+    <!-- DETAIL PAGES -->
   <div class="page">
     <h3 style="text-align:center;font-size:14px;text-transform:uppercase;margin-bottom:24px;">
       Detalhamento da Inspeção Visual
     </h3>
 
     ${findings.map(findingBlock).join('<hr class="divider" />')}
+  </div>
 
-    <div style="margin-top:48px;display:flex;justify-content:center;gap:24px;flex-wrap:wrap;">
-      <div style="flex:1;min-width:260px;max-width:320px;text-align:center;">
-        <div style="font-size:12px;font-weight:700;margin-bottom:8px;">AUDITOR SST</div>
-        <div style="height:80px;border:1px solid #ddd;border-radius:4px;background:#fff;display:block;margin:0 auto;">
-          ${inspection.inspector_signature ? `<img src="${inspection.inspector_signature}" style="height:80px;display:block;margin:0 auto;border-radius:4px;background:#fff;" />` : ''}
+  <!-- SIGNATURE PAGE -->
+  <div class="page signature-page">
+
+    <h3 style="
+      text-align:center;
+      font-size:14px;
+      text-transform:uppercase;
+      margin-bottom:40px;
+    ">
+      Assinaturas
+    </h3>
+
+    <div class="signature-container">
+
+      <div class="signature-card">
+        <div style="font-size:12px;font-weight:700;margin-bottom:8px;">
+          AUDITOR SST
         </div>
-        <p style="font-size:13px;font-weight:600;margin-top:16px;text-align:center;">${inspection.inspector_name ?? ''}</p>
-        <p style="font-size:12px;color:#555;margin-top:2px;text-align:center;">${inspection.inspector_role ?? ''}</p>
+
+        <div class="signature-box">
+          ${
+            inspection.inspector_signature
+              ? `<img src="${inspection.inspector_signature}" />`
+              : ''
+          }
+        </div>
+
+        <p style="font-size:13px;font-weight:600;margin-top:12px;">
+          ${inspection.inspector_name ?? ''}
+        </p>
+
+        <p style="font-size:12px;color:#555;">
+          ${inspection.inspector_role ?? ''}
+        </p>
       </div>
 
-      <div style="flex:1;min-width:260px;max-width:320px;text-align:center;">
-        <div style="font-size:12px;font-weight:700;margin-bottom:8px;">RESPONSÁVEL PELO LOCAL</div>
-        <div style="height:80px;border:1px solid #ddd;border-radius:4px;background:#fff;display:block;margin:0 auto;">
-          ${inspection.responsible_signature ? `<img src="${inspection.responsible_signature}" style="height:80px;display:block;margin:0 auto;border-radius:4px;background:#fff;" />` : ''}
+      <div class="signature-card">
+        <div style="font-size:12px;font-weight:700;margin-bottom:8px;">
+          RESPONSÁVEL PELO LOCAL
         </div>
-        <p style="font-size:13px;font-weight:600;margin-top:16px;text-align:center;">${inspection.responsible_name ?? ''}</p>
-        <p style="font-size:12px;color:#555;margin-top:2px;text-align:center;">${inspection.responsible_role ?? ''}</p>
+
+        <div class="signature-box">
+          ${
+            inspection.responsible_signature
+              ? `<img src="${inspection.responsible_signature}" />`
+              : ''
+          }
+        </div>
+
+        <p style="font-size:13px;font-weight:600;margin-top:12px;">
+          ${inspection.responsible_name ?? ''}
+        </p>
+
+        <p style="font-size:12px;color:#555;">
+          ${inspection.responsible_role ?? ''}
+        </p>
       </div>
+
     </div>
+
   </div>
 
 </body>
