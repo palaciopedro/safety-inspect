@@ -4,56 +4,121 @@ import SignatureCanvas from 'react-native-signature-canvas';
 
 interface Props {
   visible: boolean;
-  onConfirm: (inspectorName: string, inspectorRole: string, signature: string) => void;
+  onConfirm: (
+    auditorName: string,
+    auditorRole: string,
+    auditorSignature: string,
+    responsibleName: string,
+    responsibleRole: string,
+    responsibleSignature: string
+  ) => void;
   onCancel: () => void;
 }
 
 export const FinalizationModal = ({ visible, onConfirm, onCancel }: Props) => {
-  const [inspectorName, setInspectorName] = useState('');
-  const [inspectorRole, setInspectorRole] = useState('');
-  const [signature, setSignature] = useState<string | null>(null);
+  const [auditorName, setAuditorName] = useState('');
+  const [auditorRole, setAuditorRole] = useState('');
+  const [auditorSignature, setAuditorSignature] = useState<string | null>(null);
 
-  const signatureRef = useRef<any>(null);
+  const [responsibleName, setResponsibleName] = useState('');
+  const [responsibleRole, setResponsibleRole] = useState('');
+  const [responsibleSignature, setResponsibleSignature] = useState<string | null>(null);
 
-  const handleSignature = (sig: string) => {
-    setSignature(sig);
+  const signatureRefAuditor = useRef<any>(null);
+  const signatureRefResponsible = useRef<any>(null);
+
+  const handleSignatureAuditor = (sig: string) => {
+    setAuditorSignature(sig);
+  };
+
+  const handleSignatureResponsible = (sig: string) => {
+    setResponsibleSignature(sig);
   };
 
   const handleClear = () => {
-    signatureRef.current?.clearSignature();
-    setSignature(null);
+    signatureRefAuditor.current?.clearSignature();
+    signatureRefResponsible.current?.clearSignature();
+    setAuditorSignature(null);
+    setResponsibleSignature(null);
   };
 
-  const handleEnd = () => {
-    signatureRef.current?.readSignature();
+  const [step, setStep] = useState<number>(1);
+
+  const handleClearAuditor = () => {
+    signatureRefAuditor.current?.clearSignature();
+    setAuditorSignature(null);
+  };
+
+  const handleAdvance = () => {
+    // preserve auditorSignature value but clear the canvas display
+    signatureRefAuditor.current?.clearSignature();
+    setStep(2);
+  };
+
+  const handleClearResponsible = () => {
+    signatureRefResponsible.current?.clearSignature();
+    setResponsibleSignature(null);
+  };
+
+  const handleEndAuditor = () => {
+    signatureRefAuditor.current?.readSignature();
+  };
+
+  const handleEndResponsible = () => {
+    signatureRefResponsible.current?.readSignature();
   };
 
   const handleConfirm = () => {
-    if (inspectorName.trim() && inspectorRole.trim() && signature) {
-      onConfirm(inspectorName, inspectorRole, signature);
+    if (
+      auditorName.trim() &&
+      auditorRole.trim() &&
+      auditorSignature &&
+      responsibleName.trim() &&
+      responsibleRole.trim() &&
+      responsibleSignature
+    ) {
+      onConfirm(
+        auditorName,
+        auditorRole,
+        auditorSignature,
+        responsibleName,
+        responsibleRole,
+        responsibleSignature
+      );
 
-      setInspectorName('');
-      setInspectorRole('');
-      setSignature(null);
+      setAuditorName('');
+      setAuditorRole('');
+      setAuditorSignature(null);
+      setResponsibleName('');
+      setResponsibleRole('');
+      setResponsibleSignature(null);
 
-      signatureRef.current?.clearSignature();
+      signatureRefAuditor.current?.clearSignature();
+      signatureRefResponsible.current?.clearSignature();
     }
   };
 
   const handleCancel = () => {
-    setInspectorName('');
-    setInspectorRole('');
-    setSignature(null);
+    setAuditorName('');
+    setAuditorRole('');
+    setAuditorSignature(null);
+    setResponsibleName('');
+    setResponsibleRole('');
+    setResponsibleSignature(null);
 
-    signatureRef.current?.clearSignature();
+    signatureRefAuditor.current?.clearSignature();
+    signatureRefResponsible.current?.clearSignature();
 
     onCancel();
   };
 
   const isValid =
-    inspectorName.trim() &&
-    inspectorRole.trim() &&
-    signature;
+    auditorName.trim() &&
+    auditorRole.trim() &&
+    auditorSignature &&
+    responsibleName.trim() &&
+    responsibleRole.trim() &&
+    responsibleSignature;
 
   const webStyle = `
     .m-signature-pad {
@@ -91,71 +156,121 @@ export const FinalizationModal = ({ visible, onConfirm, onCancel }: Props) => {
         <View style={styles.modal}>
           <Text style={styles.title}>Finalizar Inspeção</Text>
 
-          <Text style={styles.label}>Nome do Inspetor</Text>
-          <TextInput
-            style={styles.input}
-            value={inspectorName}
-            onChangeText={setInspectorName}
-            placeholder="Nome completo"
-          />
+          {step === 1 ? (
+            <>
+              <Text style={styles.label}>Nome do Auditor SST</Text>
+              <TextInput
+                style={styles.input}
+                value={auditorName}
+                onChangeText={setAuditorName}
+                placeholder="Nome completo"
+              />
 
-          <Text style={styles.label}>Cargo do Inspetor</Text>
-          <TextInput
-            style={styles.input}
-            value={inspectorRole}
-            onChangeText={setInspectorRole}
-            placeholder="Cargo ou função"
-          />
+              <Text style={styles.label}>Cargo do Auditor SST</Text>
+              <TextInput
+                style={styles.input}
+                value={auditorRole}
+                onChangeText={setAuditorRole}
+                placeholder="Cargo ou função"
+              />
 
-          <Text style={styles.label}>Assinatura</Text>
+              <Text style={styles.label}>Assinatura do Auditor SST</Text>
 
-          <View style={styles.signatureContainer}>
-            <SignatureCanvas
-              ref={signatureRef}
-              onOK={handleSignature}
-              onEnd={handleEnd}
-              webStyle={webStyle}
-              descriptionText=""
-              clearText=""
-              confirmText=""
-              autoClear={false}
-              backgroundColor="#fff"
-              penColor="#000"
-            />
-          </View>
+              <View style={styles.signatureContainer}>
+                <SignatureCanvas
+                  ref={signatureRefAuditor}
+                  onOK={handleSignatureAuditor}
+                  onEnd={handleEndAuditor}
+                  webStyle={webStyle}
+                  descriptionText=""
+                  clearText=""
+                  confirmText=""
+                  autoClear={false}
+                  backgroundColor="#fff"
+                  penColor="#000"
+                />
+              </View>
 
-          <TouchableOpacity
-            style={styles.clearButton}
-            onPress={handleClear}
-          >
-            <Text style={styles.clearText}>Limpar</Text>
-          </TouchableOpacity>
+              <TouchableOpacity style={styles.clearButton} onPress={handleClearAuditor}>
+                <Text style={styles.clearText}>Limpar</Text>
+              </TouchableOpacity>
 
-          {!signature && (
-            <Text style={styles.warning}>
-              Assinatura obrigatória
-            </Text>
+              {(!auditorSignature || !auditorName.trim() || !auditorRole.trim()) && (
+                <Text style={styles.warning}>Preencha nome, cargo e assinatura do Auditor</Text>
+              )}
+
+              <View style={styles.buttons}>
+                <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
+                  <Text style={styles.cancelText}>Cancelar</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.confirmButton, (!auditorSignature || !auditorName.trim() || !auditorRole.trim()) && styles.disabled]}
+                  onPress={handleAdvance}
+                  disabled={!auditorSignature || !auditorName.trim() || !auditorRole.trim()}
+                >
+                  <Text style={styles.confirmText}>Avançar</Text>
+                </TouchableOpacity>
+              </View>
+            </>
+          ) : (
+            <>
+              <Text style={styles.label}>Nome do Responsável pelo Local</Text>
+              <TextInput
+                style={styles.input}
+                value={responsibleName}
+                onChangeText={setResponsibleName}
+                placeholder="Nome completo"
+              />
+
+              <Text style={styles.label}>Cargo do Responsável pelo Local</Text>
+              <TextInput
+                style={styles.input}
+                value={responsibleRole}
+                onChangeText={setResponsibleRole}
+                placeholder="Cargo ou função"
+              />
+
+              <Text style={styles.label}>Assinatura do Responsável pelo Local</Text>
+
+              <View style={styles.signatureContainer}>
+                <SignatureCanvas
+                  ref={signatureRefResponsible}
+                  onOK={handleSignatureResponsible}
+                  onEnd={handleEndResponsible}
+                  webStyle={webStyle}
+                  descriptionText=""
+                  clearText=""
+                  confirmText=""
+                  autoClear={false}
+                  backgroundColor="#fff"
+                  penColor="#000"
+                />
+              </View>
+
+              <TouchableOpacity style={styles.clearButton} onPress={handleClearResponsible}>
+                <Text style={styles.clearText}>Limpar</Text>
+              </TouchableOpacity>
+
+              {(!responsibleSignature || !responsibleName.trim() || !responsibleRole.trim()) && (
+                <Text style={styles.warning}>Preencha nome, cargo e assinatura do Responsável</Text>
+              )}
+
+              <View style={styles.buttons}>
+                <TouchableOpacity style={styles.cancelButton} onPress={() => setStep(1)}>
+                  <Text style={styles.cancelText}>Voltar</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.confirmButton, (!responsibleSignature || !responsibleName.trim() || !responsibleRole.trim()) && styles.disabled]}
+                  onPress={handleConfirm}
+                  disabled={!responsibleSignature || !responsibleName.trim() || !responsibleRole.trim()}
+                >
+                  <Text style={styles.confirmText}>Finalizar</Text>
+                </TouchableOpacity>
+              </View>
+            </>
           )}
-
-          <View style={styles.buttons}>
-            <TouchableOpacity
-              style={styles.cancelButton}
-              onPress={handleCancel}
-            >
-              <Text style={styles.cancelText}>Cancelar</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[
-                styles.confirmButton,
-                !isValid && styles.disabled,
-              ]}
-              onPress={handleConfirm}
-              disabled={!isValid}
-            >
-              <Text style={styles.confirmText}>Finalizar</Text>
-            </TouchableOpacity>
-          </View>
         </View>
       </View>
     </Modal>

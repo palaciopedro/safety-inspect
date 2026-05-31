@@ -153,11 +153,7 @@ export const generateReportHTML = (
       <div></div>
     </div>
 
-    ${inspection.inspector_name ? `
-    <p style="margin-bottom:16px;font-size:13px;">
-      Preparado por: <strong>${inspection.inspector_name}</strong>
-      ${inspection.inspector_role ? ` — ${inspection.inspector_role}` : ''}
-    </p>` : ''}
+    
 
     <div style="background:#f5f5f5;padding:12px;margin-bottom:12px;">
       <h3 style="text-align:center;font-size:14px;text-transform:uppercase;">
@@ -189,15 +185,25 @@ export const generateReportHTML = (
 
     ${findings.map(findingBlock).join('<hr class="divider" />')}
 
-    ${inspection.inspector_signature ? `
-    <div style="margin-top:48px;display:flex;justify-content:flex-end;">
-      <div style="text-align:center;width:260px;">
-        <img src="${inspection.inspector_signature}"
-             style="height:80px;display:block;margin:0 auto;border:1px solid #ddd;border-radius:4px;background:#fff;" />
+    <div style="margin-top:48px;display:flex;justify-content:center;gap:24px;flex-wrap:wrap;">
+      <div style="flex:1;min-width:260px;max-width:320px;text-align:center;">
+        <div style="font-size:12px;font-weight:700;margin-bottom:8px;">AUDITOR SST</div>
+        <div style="height:80px;border:1px solid #ddd;border-radius:4px;background:#fff;display:block;margin:0 auto;">
+          ${inspection.inspector_signature ? `<img src="${inspection.inspector_signature}" style="height:80px;display:block;margin:0 auto;border-radius:4px;background:#fff;" />` : ''}
+        </div>
         <p style="font-size:13px;font-weight:600;margin-top:16px;text-align:center;">${inspection.inspector_name ?? ''}</p>
         <p style="font-size:12px;color:#555;margin-top:2px;text-align:center;">${inspection.inspector_role ?? ''}</p>
       </div>
-    </div>` : ''}
+
+      <div style="flex:1;min-width:260px;max-width:320px;text-align:center;">
+        <div style="font-size:12px;font-weight:700;margin-bottom:8px;">RESPONSÁVEL PELO LOCAL</div>
+        <div style="height:80px;border:1px solid #ddd;border-radius:4px;background:#fff;display:block;margin:0 auto;">
+          ${inspection.responsible_signature ? `<img src="${inspection.responsible_signature}" style="height:80px;display:block;margin:0 auto;border-radius:4px;background:#fff;" />` : ''}
+        </div>
+        <p style="font-size:13px;font-weight:600;margin-top:16px;text-align:center;">${inspection.responsible_name ?? ''}</p>
+        <p style="font-size:12px;color:#555;margin-top:2px;text-align:center;">${inspection.responsible_role ?? ''}</p>
+      </div>
+    </div>
   </div>
 
 </body>

@@ -8,6 +8,9 @@ export interface Inspection {
   inspector_name?: string;
   inspector_role?: string;
   inspector_signature?: string;
+  responsible_name?: string;
+  responsible_role?: string;
+  responsible_signature?: string;
   created_at: string;
 }
 

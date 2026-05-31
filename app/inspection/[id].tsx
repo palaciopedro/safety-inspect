@@ -35,17 +35,41 @@ export default function InspectionDetail() {
     }
   };
 
-  const handleFinalize = (inspectorName: string, inspectorRole: string, signature: string) => {
-    finalize(inspectorName, inspectorRole, signature);
+  const handleFinalize = (
+    auditorName: string,
+    auditorRole: string,
+    auditorSignature: string,
+    responsibleName: string,
+    responsibleRole: string,
+    responsibleSignature: string
+  ) => {
+    finalize(
+      auditorName,
+      auditorRole,
+      auditorSignature,
+      responsibleName,
+      responsibleRole,
+      responsibleSignature
+    );
   };
 
-  const finalize = async (inspectorName: string, inspectorRole: string, signature: string) => {
+  const finalize = async (
+    auditorName: string,
+    auditorRole: string,
+    auditorSignature: string,
+    responsibleName: string,
+    responsibleRole: string,
+    responsibleSignature: string
+  ) => {
     try {
       await db.inspections.update(id, {
         status: 'completed',
-        inspector_name: inspectorName,
-        inspector_role: inspectorRole,
-        inspector_signature: signature,
+        inspector_name: auditorName,
+        inspector_role: auditorRole,
+        inspector_signature: auditorSignature,
+        responsible_name: responsibleName,
+        responsible_role: responsibleRole,
+        responsible_signature: responsibleSignature,
       });
       setShowFinalizationModal(false);
       loadData();
@@ -91,21 +115,14 @@ export default function InspectionDetail() {
         <Text style={styles.unit}>{inspection.unit}</Text>
         <Text style={styles.date}>{formatDateBR(inspection.date)}</Text>
         {inspection.inspector_name && (
-          <>
-            <Text style={styles.inspector}>
-              Inspetor: {inspection.inspector_name} - {inspection.inspector_role}
-            </Text>
-            {inspection.inspector_signature && (
-              <View style={styles.signaturePreview}>
-                <Text style={styles.signatureLabel}>Assinatura:</Text>
-                <Image
-                  source={{ uri: inspection.inspector_signature }}
-                  style={styles.signatureImage}
-                  resizeMode="contain"
-                />
-              </View>
-            )}
-          </>
+          <Text style={styles.inspector}>
+            Auditor SST: {inspection.inspector_name} - {inspection.inspector_role}
+          </Text>
+        )}
+        {inspection.responsible_name && (
+          <Text style={styles.inspector}>
+            Responsável pelo Local: {inspection.responsible_name} - {inspection.responsible_role}
+          </Text>
         )}
       </View>
 
