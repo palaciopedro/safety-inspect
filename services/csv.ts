@@ -6,6 +6,7 @@ import { Inspection, Finding } from '../types';
 const HEADERS = [
   'O que fazer',
   'Por que?',
+  'Requisito Legal',
   'Onde?',
   'Quem?',
   'Prazo início',
@@ -40,6 +41,7 @@ export const generateAndShareCSV = async (
       return [
         finding.what_to_do,
         finding.why_to_do,
+        finding.legal_requirement,
         finding.sector ?? '',
         inspection.inspector_name ?? '',
         inspection.date,

@@ -49,7 +49,7 @@ export const FindingCard = ({ finding, onDelete, onEdit }: Props) => {
       </View>
 
       <View style={styles.row}>
-        <Text style={styles.label}>Requerimento Legal:</Text>
+        <Text style={styles.label}>Requisito Legal:</Text>
         <Text style={styles.value}>{finding.legal_requirement}</Text>
       </View>
 

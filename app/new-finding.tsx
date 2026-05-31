@@ -142,7 +142,7 @@ export default function NewFinding() {
         textAlignVertical="top"
       />
 
-      <Text style={styles.label}>Requerimento Legal</Text>
+      <Text style={styles.label}>Requisito Legal</Text>
       <TextInput
         style={styles.multiline}
         value={legalRequirement}

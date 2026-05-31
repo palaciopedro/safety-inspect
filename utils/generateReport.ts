@@ -44,11 +44,7 @@ const photoGrid = (photos: string[]): string => {
 const findingBlock = (finding: Finding, index: number): string => {
   const color = getRiskColor(finding.risk_level);
   return `
-    <div style="margin-bottom:32px;page-break-inside:avoid;">
-      <div style="background:#4caf50;color:#fff;display:inline-block;padding:4px 12px;border-radius:4px;font-weight:bold;font-size:16px;margin-bottom:12px;">
-        ${String(index + 1).padStart(2, '0')}
-      </div>
-
+    <div style="margin-bottom:32px;page-break-inside:avoid;border:1px solid #e5e7eb;border-radius:8px;padding:16px;background:#fff;">
       <h3 style="font-size:18px;font-weight:bold;margin:0 0 8px 0;">
         ${finding.risk_description}
       </h3>
@@ -68,14 +64,14 @@ const findingBlock = (finding: Finding, index: number): string => {
         <strong>Por que:</strong> ${finding.why_to_do}
       </p>
       <p style="margin:4px 0;font-size:13px;">
-        <strong>Requerimento Legal:</strong> ${finding.legal_requirement}
+        <strong>Requisito Legal:</strong> ${finding.legal_requirement}
       </p>
 
       <div style="margin-top:8px;font-size:12px;color:#555;">
-        <span>G: ${finding.gravity_value} &nbsp;|&nbsp;</span>
-        <span>F: ${finding.frequency_value} &nbsp;|&nbsp;</span>
-        <span>P: ${finding.probability_value} &nbsp;|&nbsp;</span>
-        <span>E: ${finding.exposure_value}</span>
+        <span>Grav: ${finding.gravity_value} &nbsp;|&nbsp;</span>
+        <span>Freq: ${finding.frequency_value} &nbsp;|&nbsp;</span>
+        <span>Prob: ${finding.probability_value} &nbsp;|&nbsp;</span>
+        <span>Exp: ${finding.exposure_value}</span>
       </div>
 
       ${photoGrid(finding.photos)}
@@ -87,8 +83,9 @@ const summaryRow = (finding: Finding, index: number): string => {
   return `
     <tr>
       <td style="padding:8px;text-align:center;">${String(index + 1).padStart(2, '0')}</td>
-      <td style="padding:8px;">${finding.sector}</td>
-      <td style="padding:8px;">${finding.risk_description}</td>
+      <td style="padding:8px;text-align:center;">${finding.sector}</td>
+      <td style="padding:8px;text-align:center;">${finding.legal_requirement}</td>
+      <td style="padding:8px;text-align:center;">${finding.risk_description}</td>
       <td style="padding:8px;text-align:center;color:${color};font-weight:bold;">
         ${riskLabels[finding.risk_level]}
       </td>
@@ -173,6 +170,7 @@ export const generateReportHTML = (
         <tr>
           <th>Nº</th>
           <th>Setor</th>
+          <th>Requisito Legal</th>
           <th>Risco/Ocorrência</th>
           <th>Nível de Risco</th>
         </tr>
@@ -192,12 +190,12 @@ export const generateReportHTML = (
     ${findings.map(findingBlock).join('<hr class="divider" />')}
 
     ${inspection.inspector_signature ? `
-    <div style="display:flex;justify-content:flex-end;margin-top:48px;">
-      <div style="text-align:center;">
+    <div style="margin-top:48px;display:flex;justify-content:flex-end;">
+      <div style="text-align:center;width:260px;">
         <img src="${inspection.inspector_signature}"
              style="height:80px;display:block;margin:0 auto;border:1px solid #ddd;border-radius:4px;background:#fff;" />
-        <p style="font-size:13px;font-weight:600;margin-top:8px;">${inspection.inspector_name ?? ''}</p>
-        <p style="font-size:12px;color:#555;margin-top:2px;">${inspection.inspector_role ?? ''}</p>
+        <p style="font-size:13px;font-weight:600;margin-top:16px;text-align:center;">${inspection.inspector_name ?? ''}</p>
+        <p style="font-size:12px;color:#555;margin-top:2px;text-align:center;">${inspection.inspector_role ?? ''}</p>
       </div>
     </div>` : ''}
   </div>
