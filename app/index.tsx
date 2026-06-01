@@ -1,11 +1,14 @@
 import { useState, useCallback } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from 'expo-router';
-import { Svg, Path } from 'react-native-svg';
+import { Ionicons } from '@expo/vector-icons';
 import { Inspection } from '../types';
 import { InspectionCard } from '../components/InspectionCard';
 import { db } from '../services/database';
+import { Image } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default function Home() {
   const router = useRouter();
@@ -38,85 +41,144 @@ export default function Home() {
     }
   };
 
-  return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Inspeções</Text>
-        <View style={styles.headerActions}>
-          <TouchableOpacity
-            style={styles.iconButton}
-            onPress={() => router.push('/settings')}
-          >
-            <Svg width={24} height={24} viewBox="0 0 24 24" fill="#666">
-              <Path d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96a7.02 7.02 0 0 0-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.48.48 0 0 0-.59.22L2.74 8.87a.47.47 0 0 0 .12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58a.47.47 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.37 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.57 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.47.47 0 0 0-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
-            </Svg>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.button}
-            onPress={() => router.push('/new-inspection')}
-          >
-            <Text style={styles.buttonText}>Nova Inspeção</Text>
-          </TouchableOpacity>
+ return (
+  <SafeAreaView style={styles.container}>
+    <LinearGradient
+      colors={['#0F4C81', '#1A6BA8', '#4FAE6B']}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 0 }}
+      style={styles.header}
+    >
+      <View style={styles.brand}>
+        <View style={styles.logoContainer}>
+          <Image
+            source={require('../assets/logo.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+        </View>
+
+        <View>
+          <Text style={styles.title}>Safety Inspect</Text>
+          <Text style={styles.subtitle}>
+            Gestão de Inspeções SST
+          </Text>
         </View>
       </View>
 
-      <FlatList
-        data={inspections}
-        keyExtractor={item => item.id}
-        renderItem={({ item }) => (
-          <InspectionCard
-            inspection={item}
-            onPress={() => router.push(`/inspection/${item.id}`)}
-            onDelete={() => handleDelete(item.id)}
-            onEdit={() => router.push(`/new-inspection?id=${item.id}`)}
-          />
-        )}
-        contentContainerStyle={styles.list}
-        refreshing={loading}
-        onRefresh={loadInspections}
-      />
-    </View>
-  );
+      <TouchableOpacity
+        style={styles.iconButton}
+        onPress={() => router.push('/settings')}
+      >
+        <Ionicons name="settings-outline" size={24} color="#FFFFFF" />
+      </TouchableOpacity>
+    </LinearGradient>
+
+    <FlatList
+      data={inspections}
+      keyExtractor={item => item.id}
+      renderItem={({ item }) => (
+        <InspectionCard
+          inspection={item}
+          onPress={() => router.push(`/inspection/${item.id}`)}
+          onDelete={() => handleDelete(item.id)}
+          onEdit={() => router.push(`/new-inspection?id=${item.id}`)}
+        />
+      )}
+      contentContainerStyle={styles.list}
+      refreshing={loading}
+      onRefresh={loadInspections}
+    />
+
+    <TouchableOpacity
+      style={styles.fab}
+      onPress={() => router.push('/new-inspection')}
+    >
+      <Ionicons name="add" size={34} color="#fff" />
+    </TouchableOpacity>
+
+  </SafeAreaView>
+);
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: '#F5F7FA',
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 16,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomLeftRadius: 14,
+    borderBottomRightRadius: 14,
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 6,
   },
-  headerActions: {
+
+  brand: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 12,
   },
-  iconButton: {
-    padding: 6,
+
+  logoContainer: {
+    width: 64,
+    height: 64,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
+
+  logo: {
+    width: 56,
+    height: 56,
+  },
+
   title: {
     fontSize: 24,
     fontWeight: '700',
+    color: '#FFFFFF',
   },
-  button: {
-    backgroundColor: '#3b82f6',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
+
+  subtitle: {
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.9)',
+    marginTop: 2,
   },
-  buttonText: {
-    color: '#fff',
-    fontWeight: '600',
+
+  iconButton: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   list: {
     padding: 16,
     gap: 12,
   },
+
+  fab: {
+  position: 'absolute',
+  right: 24,
+  bottom: 24,
+  width: 64,
+  height: 64,
+  borderRadius: 32,
+  backgroundColor: '#4FAE6B',
+  justifyContent: 'center',
+  alignItems: 'center',
+  elevation: 6,
+  },
+
+  fabText: {
+    color: '#fff',
+    fontSize: 32,
+    fontWeight: '700',
+  }
 });

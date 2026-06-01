@@ -97,7 +97,7 @@ export default function InspectionDetail() {
     }
   };
 
-  const handleExcel = async () => {
+  const handleCSV = async () => {
     if (!inspection) return;
     try {
       await generateAndShareCSV(inspection, findings);
@@ -152,10 +152,10 @@ export default function InspectionDetail() {
               <Text style={styles.buttonText}>Baixar Relatório</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.button, styles.excel]}
-              onPress={handleExcel}
+              style={[styles.button, styles.csv]}
+              onPress={handleCSV}
             >
-              <Text style={styles.buttonText}>Exportar Excel</Text>
+              <Text style={styles.buttonText}>Exportar CSV</Text>
             </TouchableOpacity>
           </>
         )}
@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
   report: {
     backgroundColor: '#7c3aed',
   },
-  excel: {
+  csv: {
     backgroundColor: '#1a6b2f',
   },
   buttonText: {
