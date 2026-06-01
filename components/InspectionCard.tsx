@@ -1,7 +1,9 @@
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { Inspection } from '../types';
-import { Svg, Path, Rect } from 'react-native-svg';
 import { formatDateBR } from '../utils/date';
+import { db } from '../services/database';
+import { useState, useEffect } from 'react';
 
 interface Props {
   inspection: Inspection;

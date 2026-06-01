@@ -163,18 +163,22 @@ const styles = StyleSheet.create({
     gap: 12,
   },
 
-  fab: {
+fab: {
   position: 'absolute',
-  right: 24,
-  bottom: 24,
-  width: 64,
-  height: 64,
-  borderRadius: 32,
-  backgroundColor: '#4FAE6B',
+  right: 20,
+  bottom: 20,
+
+  width: 68,
+  height: 68,
+  borderRadius: 34,
+
+  backgroundColor: '#4CAF50',
+
   justifyContent: 'center',
   alignItems: 'center',
-  elevation: 6,
-  },
+
+  elevation: 8,
+},
 
   fabText: {
     color: '#fff',
