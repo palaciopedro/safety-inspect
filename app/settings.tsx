@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity,
-  Image, StyleSheet, ScrollView, Alert, SafeAreaView,
+  Image, StyleSheet, ScrollView, Alert,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -37,14 +38,24 @@ export default function Settings() {
   };
 
   const handleSave = async () => {
-    try {
-      await settingsService.save({ companyName, companyLogo });
-      Alert.alert('Sucesso', 'Configurações salvas.');
-    } catch (error) {
-      Alert.alert('Erro', 'Falha ao salvar configurações.');
-      console.error(error);
-    }
-  };
+  try {
+    await settingsService.save({ companyName, companyLogo });
+
+    Alert.alert(
+      'Sucesso',
+      'Configurações salvas.',
+      [
+        {
+          text: 'OK',
+          onPress: () => router.back(),
+        },
+      ]
+    );
+  } catch (error) {
+    Alert.alert('Erro', 'Falha ao salvar configurações.');
+    console.error(error);
+  }
+};
 
   return (
     <SafeAreaView style={styles.container}>
@@ -54,12 +65,6 @@ export default function Settings() {
         end={{ x: 1, y: 0 }}
         style={styles.header}
       >
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => router.back()}
-        >
-          <Ionicons name="arrow-back" size={28} color="#FFFFFF" />
-        </TouchableOpacity>
         <View style={styles.headerContent}>
   <TouchableOpacity
     style={styles.backButton}
@@ -150,29 +155,27 @@ const styles = StyleSheet.create({
   },
   header: {
   paddingHorizontal: 20,
-  paddingBottom: 18,
-
+  paddingVertical: 16,
   borderBottomLeftRadius: 16,
   borderBottomRightRadius: 16,
-
   shadowColor: '#000',
   shadowOpacity: 0.15,
   shadowRadius: 8,
   elevation: 6,
   },
-  backButton: {
-    padding: 8,
-    borderRadius: 8,
-  },
   headerContent: {
-  flexDirection: 'row',
-  alignItems: 'center',
-},
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   headerTitle: {
     fontSize: 24,
     fontWeight: '700',
     color: '#FFFFFF',
     marginLeft: 12,
+  },
+  backButton: {
+  padding: 8,
+  borderRadius: 8,
   },
   content: {
     flex: 1,
