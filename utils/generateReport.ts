@@ -50,22 +50,18 @@ const photoGrid = (photos: string[]): string => {
 
 const findingBlock = (finding: Finding, index: number): string => {
   const color = getRiskColor(finding.risk_level);
+  const hrn = finding.calculated_score.toFixed(2);
   return `
     <div style="margin-bottom:32px;page-break-inside:avoid;border:1px solid #e5e7eb;border-radius:8px;padding:16px;background:#fff;">
-      <h3 style="font-size:18px;font-weight:bold;margin:0 0 8px 0;">
-        ${finding.risk_description}
-      </h3>
+      <p style="margin:4px 0;font-size:13px;">
+        <strong>N.C.:</strong> ${finding.risk_description}
+      </p>
 
       <p style="margin:4px 0;font-size:13px;">
         <strong>Setor:</strong> ${finding.sector}
       </p>
       <p style="margin:4px 0;font-size:13px;">
-        <strong>Nível de Risco:</strong>
-        <span style="color:${color};font-weight:bold;">${riskLabels[finding.risk_level]}</span>
-        (${finding.calculated_score.toFixed(2)})
-      </p>
-      <p style="margin:4px 0;font-size:13px;">
-        <strong>Melhorias necessárias:</strong> ${finding.what_to_do}
+        <strong>Melhorias:</strong> ${finding.what_to_do}
       </p>
       <p style="margin:4px 0;font-size:13px;">
         <strong>Por que:</strong> ${finding.why_to_do}
@@ -74,11 +70,17 @@ const findingBlock = (finding: Finding, index: number): string => {
         <strong>Requisito Legal:</strong> ${finding.legal_requirement}
       </p>
 
-      <div style="margin-top:8px;font-size:12px;color:#555;">
+      <div style="margin-top:8px;font-size:13px">
         <span>Grav: ${finding.gravity_value} &nbsp;|&nbsp;</span>
         <span>Freq: ${finding.frequency_value} &nbsp;|&nbsp;</span>
         <span>Prob: ${finding.probability_value} &nbsp;|&nbsp;</span>
-        <span>Exp: ${finding.exposure_value}</span>
+        <span>Exp: ${finding.exposure_value} &nbsp;|&nbsp;</span>
+        <span>HRN: ${hrn}</span>
+      </div>
+
+      <div style="margin-top:8px;font-size:13px;">
+        <strong>Grau de Risco:</strong>
+        <span style="color:${color};font-weight:bold;">${riskLabels[finding.risk_level]}</span>
       </div>
 
       ${photoGrid(finding.photos)}
@@ -208,7 +210,7 @@ export const generateReportHTML = (
           <th>Nº</th>
           <th>Setor</th>
           <th>Requisito Legal</th>
-          <th>Risco/Ocorrência</th>
+          <th>Não Conformidade</th>
           <th>Nível de Risco</th>
         </tr>
       </thead>
