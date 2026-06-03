@@ -1,6 +1,8 @@
 import { useState, useCallback } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image, Alert } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Inspection, Finding } from '../../types';
 import { FindingCard } from '../../components/FindingCard';
 import { FinalizationModal } from '../../components/FinalizationModal';
@@ -8,6 +10,7 @@ import { db } from '../../services/database';
 import { formatDateBR } from '../../utils/date';
 import { generateAndShareReport } from '../../services/report';
 import { generateAndShareCSV } from '../../services/csv';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function InspectionDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -110,56 +113,88 @@ export default function InspectionDetail() {
   if (!inspection) return null;
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.unit}>{inspection.unit}</Text>
-        <Text style={styles.date}>{formatDateBR(inspection.date)}</Text>
-        {inspection.inspector_name && (
-          <Text style={styles.inspector}>
-            Auditor SST: {inspection.inspector_name} - {inspection.inspector_role}
-          </Text>
-        )}
-        {inspection.responsible_name && (
-          <Text style={styles.inspector}>
-            Responsável pelo Local: {inspection.responsible_name} - {inspection.responsible_role}
-          </Text>
-        )}
-      </View>
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <LinearGradient
+        colors={['#0F4C81', '#1A6BA8', '#4CAF50']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={styles.header}
+      >
+        <TouchableOpacity style={styles.headerBack} onPress={() => router.back()}>
+          <Ionicons name="arrow-back" size={22} color="#FFFFFF" />
+        </TouchableOpacity>
+
+        <View style={styles.headerContent}>
+          <Text style={styles.headerTitle}>{inspection.unit}</Text>
+          <Text style={styles.headerSubtitle}>{formatDateBR(inspection.date)}</Text>
+        </View>
+      </LinearGradient>
+
+      {inspection.status === 'completed' && inspection.inspector_name && (
+        <View style={styles.summaryCard}>
+          <Text style={styles.summaryLabel}>Auditor</Text>
+          <Text style={styles.summaryText}>{inspection.inspector_name}</Text>
+          <Text style={styles.summarySubText}>{inspection.inspector_role}</Text>
+        </View>
+      )}
 
       <View style={styles.actions}>
         <TouchableOpacity
-          style={styles.button}
+          style={[styles.actionButton, styles.addFindingButton]}
           onPress={() => router.push(`/new-finding?inspectionId=${id}`)}
         >
-          <Text style={styles.buttonText}>Adicionar Ocorrência</Text>
+          <View style={styles.actionButtonContent}>
+            <Ionicons name="add-circle-outline" size={22} color="#FFFFFF" />
+            <Text style={styles.actionButtonText}>Adicionar Ocorrência</Text>
+          </View>
         </TouchableOpacity>
-        
-        {inspection.status === 'draft' && (
+
+        <View style={styles.actionRow}>
           <TouchableOpacity
-            style={[styles.button, styles.complete]}
+            style={[
+              styles.sideActionButton,
+              styles.reportButton,
+              inspection.status !== 'completed' && styles.disabledButton,
+            ]}
+            onPress={handleReport}
+            disabled={inspection.status !== 'completed'}
+          >
+            <View style={styles.actionButtonContent}>
+              <Ionicons name="document-text-outline" size={22} color="#FFFFFF" />
+              <Text style={styles.actionButtonText}>Baixar Relatório</Text>
+            </View>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.sideActionButton,
+              styles.csvButton,
+              inspection.status !== 'completed' && styles.disabledButton,
+            ]}
+            onPress={handleCSV}
+            disabled={inspection.status !== 'completed'}
+          >
+            <View style={styles.actionButtonContent}>
+              <Ionicons name="download-outline" size={22} color="#FFFFFF" />
+              <Text style={styles.actionButtonText}>Exportar CSV</Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      {inspection.status === 'draft' && (
+        <View style={styles.finalizeWrapper}>
+          <TouchableOpacity
+            style={styles.finalizeButton}
             onPress={() => setShowFinalizationModal(true)}
           >
-            <Text style={styles.buttonText}>Finalizar</Text>
+            <View style={styles.actionButtonContent}>
+              <Ionicons name="checkmark-circle-outline" size={22} color="#FFFFFF" />
+              <Text style={styles.finalizeButtonText}>Finalizar Inspeção</Text>
+            </View>
           </TouchableOpacity>
-        )}
-
-        {inspection.status === 'completed' && (
-          <>
-            <TouchableOpacity
-              style={[styles.button, styles.report]}
-              onPress={handleReport}
-            >
-              <Text style={styles.buttonText}>Baixar Relatório</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.button, styles.csv]}
-              onPress={handleCSV}
-            >
-              <Text style={styles.buttonText}>Exportar CSV</Text>
-            </TouchableOpacity>
-          </>
-        )}
-      </View>
+        </View>
+      )}
 
       <FlatList
         data={findings}
@@ -182,7 +217,7 @@ export default function InspectionDetail() {
         onConfirm={handleFinalize}
         onCancel={() => setShowFinalizationModal(false)}
       />
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -192,67 +227,139 @@ const styles = StyleSheet.create({
     backgroundColor: '#f9fafb',
   },
   header: {
-    backgroundColor: '#fff',
-    padding: 16,
-    gap: 4,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 18,
+    borderBottomLeftRadius: 16,
+    borderBottomRightRadius: 16,
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 6,
   },
-  unit: {
-    fontSize: 20,
+  headerBack: {
+    width: 42,
+    height: 42,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 8,
+  },
+  headerContent: {
+    flex: 1,
+  },
+  headerTitle: {
+    fontSize: 24,
     fontWeight: '700',
+    color: '#FFFFFF',
   },
-  date: {
-    fontSize: 16,
-    color: '#666',
-  },
-  inspector: {
-    fontSize: 14,
-    color: '#666',
+  headerSubtitle: {
     marginTop: 4,
+    fontSize: 14,
+    color: 'rgba(255,255,255,0.85)',
   },
-  signaturePreview: {
-    marginTop: 12,
-    gap: 4,
+  summaryCard: {
+    backgroundColor: '#FFFFFF',
+    marginHorizontal: 16,
+    marginTop: 16,
+    borderRadius: 16,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 3,
   },
-  signatureLabel: {
+  summaryLabel: {
     fontSize: 12,
-    fontWeight: '600',
-    color: '#666',
+    fontWeight: '700',
+    color: '#0F4C81',
+    marginBottom: 6,
   },
-  signatureImage: {
-    width: 200,
-    height: 80,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    borderRadius: 4,
-    backgroundColor: '#fff',
+  summaryText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#111827',
+    marginBottom: 4,
+  },
+  summarySubText: {
+    fontSize: 14,
+    color: '#4B5563',
   },
   actions: {
+    flexDirection: 'column',
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    gap: 12,
+  },
+  actionButton: {
+    height: 56,
+    borderRadius: 12,
+    justifyContent: 'center',
+    paddingHorizontal: 18,
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  actionButtonContent: {
     flexDirection: 'row',
-    padding: 16,
-    gap: 8,
-  },
-  button: {
-    flex: 1,
-    backgroundColor: '#3b82f6',
-    padding: 12,
-    borderRadius: 8,
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
   },
-  complete: {
-    backgroundColor: '#22c55e',
+  actionButtonText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+    fontSize: 16,
   },
-  report: {
-    backgroundColor: '#7c3aed',
+  addFindingButton: {
+    backgroundColor: '#0F4C81',
   },
-  csv: {
-    backgroundColor: '#1a6b2f',
+  reportButton: {
+    backgroundColor: '#E53935',
   },
-  buttonText: {
-    color: '#fff',
-    fontWeight: '600',
-    textAlign: 'center',
+  csvButton: {
+    backgroundColor: '#2E7D32',
+  },
+  sideActionButton: {
+    flex: 1,
+    height: 56,
+    borderRadius: 12,
+    justifyContent: 'center',
+    paddingHorizontal: 14,
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  actionRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  disabledButton: {
+    opacity: 0.55,
+  },
+  finalizeWrapper: {
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+    marginTop: 14,
+  },
+  finalizeButton: {
+    height: 56,
+    borderRadius: 12,
+    backgroundColor: '#4CAF50',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#4CAF50',
+    shadowOpacity: 0.18,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  finalizeButtonText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+    fontSize: 16,
   },
   list: {
     padding: 16,
