@@ -1,19 +1,22 @@
 import { useState, useEffect } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity,
-  Image, StyleSheet, ScrollView, Alert,
+  Image, StyleSheet, ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { AppModal } from '../components/AppModal';
 import { settingsService } from '../services/settings';
 
 export default function Settings() {
   const router = useRouter();
   const [companyName, setCompanyName] = useState('');
   const [companyLogo, setCompanyLogo] = useState<string | null>(null);
+  const [appModalVisible, setAppModalVisible] = useState(false);
+  const [appModalConfig, setAppModalConfig] = useState<any>(null);
 
   useEffect(() => {
     settingsService.load().then(s => {
@@ -38,24 +41,27 @@ export default function Settings() {
   };
 
   const handleSave = async () => {
-  try {
-    await settingsService.save({ companyName, companyLogo });
+    try {
+      await settingsService.save({ companyName, companyLogo });
 
-    Alert.alert(
-      'Sucesso',
-      'Configurações salvas.',
-      [
-        {
-          text: 'OK',
-          onPress: () => router.back(),
-        },
-      ]
-    );
-  } catch (error) {
-    Alert.alert('Erro', 'Falha ao salvar configurações.');
-    console.error(error);
-  }
-};
+      setAppModalConfig({
+        title: 'Configurações salvas',
+        message: 'As alterações foram salvas com sucesso.',
+        type: 'success',
+        confirmText: 'OK',
+      });
+      setAppModalVisible(true);
+    } catch (error) {
+      setAppModalConfig({
+        title: 'Erro',
+        message: 'Falha ao salvar configurações.',
+        type: 'danger',
+        confirmText: 'OK',
+      });
+      setAppModalVisible(true);
+      console.error(error);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -144,6 +150,21 @@ export default function Settings() {
           <Text style={styles.saveButtonText}>Salvar</Text>
         </TouchableOpacity>
       </View>
+
+      <AppModal
+        visible={appModalVisible}
+        title={appModalConfig?.title || ''}
+        message={appModalConfig?.message || ''}
+        type={appModalConfig?.type || 'info'}
+        confirmText={appModalConfig?.confirmText || 'OK'}
+        onConfirm={() => {
+          setAppModalVisible(false);
+          if (appModalConfig?.type === 'success') {
+            router.back();
+          }
+        }}
+        isConfirmOnly={true}
+      />
     </SafeAreaView>
   );
 }

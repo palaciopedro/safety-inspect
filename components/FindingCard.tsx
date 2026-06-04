@@ -1,7 +1,9 @@
-import { View, Text, StyleSheet, TouchableOpacity, Alert, Image, FlatList } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, FlatList} from 'react-native';
+import { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { Finding } from '../types';
 import { RiskBadge } from './RiskBadge';
+import { AppModal } from './AppModal';
 
 interface Props {
   finding: Finding;
@@ -10,15 +12,10 @@ interface Props {
 }
 
 export const FindingCard = ({ finding, onDelete, onEdit }: Props) => {
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+
   const handleDelete = () => {
-    Alert.alert(
-      'Excluir Ocorrência',
-      'Tem certeza que deseja excluir esta ocorrência? Esta ação não pode ser desfeita.',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        { text: 'Excluir', style: 'destructive', onPress: onDelete },
-      ]
-    );
+    setDeleteModalVisible(true);
   };
 
   return (
@@ -73,6 +70,21 @@ export const FindingCard = ({ finding, onDelete, onEdit }: Props) => {
           <Ionicons name="trash-outline" size={20} color="#EF4444" />
         </TouchableOpacity>
       </View>
+
+      <AppModal
+        visible={deleteModalVisible}
+        title="Excluir Ocorrência"
+        message="Tem certeza que deseja excluir esta ocorrência? Esta ação não pode ser desfeita."
+        type="danger"
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        showCancelButton={true}
+        onConfirm={() => {
+          setDeleteModalVisible(false);
+          onDelete();
+        }}
+        onCancel={() => setDeleteModalVisible(false)}
+      />
     </View>
   );
 };

@@ -1,8 +1,9 @@
-import { View, Text, Image, TouchableOpacity, StyleSheet, Alert, FlatList, ActivityIndicator } from 'react-native';
+import { View, Text, Image, TouchableOpacity, StyleSheet, FlatList, ActivityIndicator } from 'react-native';
 import { useState } from 'react';
 import * as ImagePicker from 'expo-image-picker';
 import { processImage } from '../utils/image';
 import { Ionicons } from '@expo/vector-icons';
+import { AppModal } from './AppModal';
 
 interface Props {
   photos: string[];
@@ -12,12 +13,21 @@ interface Props {
 
 export const PhotoPicker = ({ photos, onPhotosChange, showLabel = true }: Props) => {
   const [loading, setLoading] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalConfig, setModalConfig] = useState<any>(null);
+  const [photoToRemoveIndex, setPhotoToRemoveIndex] = useState<number | null>(null);
 
   const pickImages = async (source: 'camera' | 'gallery') => {
     if (source === 'camera') {
       const { status } = await ImagePicker.requestCameraPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert('Permissão negada', 'Permissão de câmera é necessária');
+        setModalConfig({
+          title: 'Permissão negada',
+          message: 'Permissão de câmera é necessária',
+          type: 'warning',
+          confirmText: 'OK',
+        });
+        setModalVisible(true);
         return;
       }
     }
@@ -38,7 +48,13 @@ export const PhotoPicker = ({ photos, onPhotosChange, showLabel = true }: Props)
         onPhotosChange([...photos, ...processed]);
       }
     } catch (error) {
-      Alert.alert('Erro', 'Falha ao processar imagem');
+      setModalConfig({
+        title: 'Erro',
+        message: 'Falha ao processar imagem',
+        type: 'danger',
+        confirmText: 'OK',
+      });
+      setModalVisible(true);
       console.error(error);
     } finally {
       setLoading(false);
@@ -46,18 +62,16 @@ export const PhotoPicker = ({ photos, onPhotosChange, showLabel = true }: Props)
   };
 
   const removePhoto = (index: number) => {
-    Alert.alert(
-      'Remover Foto',
-      'Deseja remover esta foto?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Remover',
-          style: 'destructive',
-          onPress: () => onPhotosChange(photos.filter((_, i) => i !== index)),
-        },
-      ]
-    );
+    setPhotoToRemoveIndex(index);
+    setModalConfig({
+      title: 'Remover Foto',
+      message: 'Deseja remover esta foto?',
+      type: 'danger',
+      confirmText: 'Remover',
+      cancelText: 'Cancelar',
+      showCancelButton: true,
+    });
+    setModalVisible(true);
   };
 
   return (
@@ -111,6 +125,28 @@ export const PhotoPicker = ({ photos, onPhotosChange, showLabel = true }: Props)
       </View>
 
       {loading && <ActivityIndicator style={styles.loader} color="#0F4C81" />}
+
+      <AppModal
+        visible={modalVisible}
+        title={modalConfig?.title || ''}
+        message={modalConfig?.message || ''}
+        type={modalConfig?.type || 'info'}
+        confirmText={modalConfig?.confirmText || 'OK'}
+        cancelText={modalConfig?.cancelText || 'Cancelar'}
+        showCancelButton={modalConfig?.showCancelButton || false}
+        isConfirmOnly={!modalConfig?.showCancelButton}
+        onConfirm={() => {
+          if (photoToRemoveIndex !== null) {
+            onPhotosChange(photos.filter((_, i) => i !== photoToRemoveIndex));
+            setPhotoToRemoveIndex(null);
+          }
+          setModalVisible(false);
+        }}
+        onCancel={() => {
+          setPhotoToRemoveIndex(null);
+          setModalVisible(false);
+        }}
+      />
     </View>
   );
 };

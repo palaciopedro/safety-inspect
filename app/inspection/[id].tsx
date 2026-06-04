@@ -1,11 +1,12 @@
 import { useState, useCallback } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Inspection, Finding } from '../../types';
 import { FindingCard } from '../../components/FindingCard';
 import { FinalizationModal } from '../../components/FinalizationModal';
+import { AppModal } from '../../components/AppModal';
 import { db } from '../../services/database';
 import { formatDateBR } from '../../utils/date';
 import { generateAndShareReport } from '../../services/report';
@@ -18,6 +19,8 @@ export default function InspectionDetail() {
   const [inspection, setInspection] = useState<Inspection | null>(null);
   const [findings, setFindings] = useState<Finding[]>([]);
   const [showFinalizationModal, setShowFinalizationModal] = useState(false);
+  const [appModalVisible, setAppModalVisible] = useState(false);
+  const [appModalConfig, setAppModalConfig] = useState<any>(null);
 
   useFocusEffect(
     useCallback(() => {
@@ -97,7 +100,13 @@ export default function InspectionDetail() {
     try {
       await generateAndShareReport(inspection, findings);
     } catch (error) {
-      Alert.alert('Erro', 'Falha ao gerar relatório');
+      setAppModalConfig({
+        title: 'Erro',
+        message: 'Falha ao gerar relatório',
+        type: 'danger',
+        confirmText: 'OK',
+      });
+      setAppModalVisible(true);
       console.error(error);
     }
   };
@@ -107,7 +116,13 @@ export default function InspectionDetail() {
     try {
       await generateAndShareCSV(inspection, findings);
     } catch (error) {
-      Alert.alert('Erro', 'Falha ao exportar planilha');
+      setAppModalConfig({
+        title: 'Erro',
+        message: 'Falha ao exportar planilha',
+        type: 'danger',
+        confirmText: 'OK',
+      });
+      setAppModalVisible(true);
       console.error(error);
     }
   };
@@ -220,6 +235,16 @@ export default function InspectionDetail() {
         onConfirm={handleFinalize}
         onCancel={() => setShowFinalizationModal(false)}
       />
+
+      <AppModal
+        visible={appModalVisible}
+        title={appModalConfig?.title || ''}
+        message={appModalConfig?.message || ''}
+        type={appModalConfig?.type || 'info'}
+        confirmText={appModalConfig?.confirmText || 'OK'}
+        onConfirm={() => setAppModalVisible(false)}
+        isConfirmOnly={true}
+      />
     </SafeAreaView>
   );
 }
@@ -233,7 +258,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 18,
+    paddingVertical: 10,
     borderBottomLeftRadius: 16,
     borderBottomRightRadius: 16,
     shadowColor: '#000',

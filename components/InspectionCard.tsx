@@ -1,9 +1,11 @@
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity} from 'react-native';
+import { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { Inspection } from '../types';
 import { formatDateBR } from '../utils/date';
 import { db } from '../services/database';
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
+import { AppModal } from './AppModal';
 
 interface Props {
   inspection: Inspection;
@@ -19,6 +21,7 @@ const statusLabels = {
 
 export const InspectionCard = ({ inspection, onPress, onDelete, onEdit }: Props) => {
   const [findingsCount, setFindingsCount] = useState(0);
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
 
   useEffect(() => {
     const loadFindingsCount = async () => {
@@ -33,14 +36,7 @@ export const InspectionCard = ({ inspection, onPress, onDelete, onEdit }: Props)
   }, [inspection.id]);
 
   const handleDelete = () => {
-    Alert.alert(
-      'Excluir Inspeção',
-      'Tem certeza que deseja excluir esta inspeção? Esta ação não pode ser desfeita.',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        { text: 'Excluir', style: 'destructive', onPress: onDelete }
-      ]
-    );
+    setDeleteModalVisible(true);
   };
 
   const isCompleted = inspection.status === 'completed';
@@ -94,6 +90,21 @@ export const InspectionCard = ({ inspection, onPress, onDelete, onEdit }: Props)
           </View>
         )}
       </View>
+
+      <AppModal
+        visible={deleteModalVisible}
+        title="Excluir Inspeção"
+        message="Tem certeza que deseja excluir esta inspeção? Esta ação não pode ser desfeita."
+        type="danger"
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        showCancelButton={true}
+        onConfirm={() => {
+          setDeleteModalVisible(false);
+          onDelete();
+        }}
+        onCancel={() => setDeleteModalVisible(false)}
+      />
     </TouchableOpacity>
   );
 };
