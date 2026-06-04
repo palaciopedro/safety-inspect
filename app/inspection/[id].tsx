@@ -90,6 +90,8 @@ export default function InspectionDetail() {
     }
   };
 
+  const hasFindings = findings.length > 0;
+
   const handleReport = async () => {
     if (!inspection) return;
     try {
@@ -185,8 +187,9 @@ export default function InspectionDetail() {
       {inspection.status === 'draft' && (
         <View style={styles.finalizeWrapper}>
           <TouchableOpacity
-            style={styles.finalizeButton}
-            onPress={() => setShowFinalizationModal(true)}
+            style={[styles.finalizeButton, !hasFindings && styles.disabledButton]}
+            onPress={() => hasFindings ? setShowFinalizationModal(true) : null}
+            disabled={!hasFindings}
           >
             <View style={styles.actionButtonContent}>
               <Ionicons name="checkmark-circle-outline" size={22} color="#FFFFFF" />
@@ -368,6 +371,6 @@ const styles = StyleSheet.create({
   empty: {
     textAlign: 'center',
     color: '#999',
-    marginTop: 32,
+    marginTop: 150,
   },
 });
