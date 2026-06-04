@@ -2,13 +2,15 @@ import { View, Text, Image, TouchableOpacity, StyleSheet, Alert, FlatList, Activ
 import { useState } from 'react';
 import * as ImagePicker from 'expo-image-picker';
 import { processImage } from '../utils/image';
+import { Ionicons } from '@expo/vector-icons';
 
 interface Props {
   photos: string[];
   onPhotosChange: (photos: string[]) => void;
+  showLabel?: boolean;
 }
 
-export const PhotoPicker = ({ photos, onPhotosChange }: Props) => {
+export const PhotoPicker = ({ photos, onPhotosChange, showLabel = true }: Props) => {
   const [loading, setLoading] = useState(false);
 
   const pickImages = async (source: 'camera' | 'gallery') => {
@@ -60,7 +62,12 @@ export const PhotoPicker = ({ photos, onPhotosChange }: Props) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>Fotos do Local</Text>
+      {showLabel && (
+        <View style={styles.labelRow}>
+          <Ionicons name="camera-outline" size={18} color="#0F4C81" style={{ marginRight: 8 }} />
+          <Text style={styles.label}>Evidências Fotográficas</Text>
+        </View>
+      )}
 
       {photos.length > 0 && (
         <FlatList
@@ -89,7 +96,8 @@ export const PhotoPicker = ({ photos, onPhotosChange }: Props) => {
           onPress={() => pickImages('camera')}
           disabled={loading}
         >
-          <Text style={styles.buttonText}>Câmera</Text>
+          <Ionicons name="camera-outline" size={20} color="#FFFFFF" />
+          <Text style={styles.buttonLabel}>Câmera</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -97,22 +105,28 @@ export const PhotoPicker = ({ photos, onPhotosChange }: Props) => {
           onPress={() => pickImages('gallery')}
           disabled={loading}
         >
-          <Text style={styles.buttonText}>Galeria</Text>
+          <Ionicons name="images-outline" size={20} color="#FFFFFF" />
+          <Text style={styles.buttonLabel}>Galeria</Text>
         </TouchableOpacity>
       </View>
 
-      {loading && <ActivityIndicator style={styles.loader} color="#3b82f6" />}
+      {loading && <ActivityIndicator style={styles.loader} color="#0F4C81" />}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 16,
+    marginTop: 8,
   },
   label: {
     fontSize: 14,
     fontWeight: '600',
+    color: '#374151',
+  },
+  labelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 8,
   },
   list: {
@@ -125,7 +139,7 @@ const styles = StyleSheet.create({
   photo: {
     width: 100,
     height: 100,
-    borderRadius: 8,
+    borderRadius: 12,
     backgroundColor: '#f3f4f6',
   },
   removeButton: {
@@ -146,24 +160,28 @@ const styles = StyleSheet.create({
   },
   buttons: {
     flexDirection: 'row',
-    gap: 8,
+    gap: 12,
+    marginTop: 8,
   },
   button: {
     flex: 1,
-    padding: 12,
-    borderRadius: 8,
+    height: 72,
+    borderRadius: 12,
     alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 10,
   },
   cameraButton: {
-    backgroundColor: '#3b82f6',
+    backgroundColor: '#0F4C81',
   },
   galleryButton: {
-    backgroundColor: '#8b5cf6',
+    backgroundColor: '#4CAF50',
   },
-  buttonText: {
+  buttonLabel: {
     color: '#fff',
     fontWeight: '600',
     fontSize: 14,
+    marginTop: 6,
   },
   disabled: {
     opacity: 0.5,

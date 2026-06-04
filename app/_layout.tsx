@@ -6,7 +6,7 @@ export default function Layout() {
       <Stack.Screen name="index" options={{headerShown: false,}}/>
       <Stack.Screen name="new-inspection" options={{headerShown: false}} />
       <Stack.Screen name="inspection/[id]" options={{headerShown: false}} />
-      <Stack.Screen name="new-finding" options={{ title: 'Nova Ocorrência' }} />
+      <Stack.Screen name="new-finding" options={{headerShown: false}} />
       <Stack.Screen name="settings" options={{headerShown: false}} />
     </Stack>
   );
