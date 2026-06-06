@@ -92,12 +92,3 @@ Backend:
 
 * Supabase
 * PostgreSQL
-
-Bibliotecas principais:
-
-* expo-print
-* expo-sharing
-* expo-image-picker
-* expo-image-manipulator
-* react-native-signature-canvas
-* react-native-svg
