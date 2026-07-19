@@ -1,0 +1,15 @@
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "1c8e0cc8-a543-4158-83b2-8cadd95e0eb2"
+      }
+    },
+    "android": {
+      "package": "com.pedro_palacio.securityinspectionapp"
+    },
+    "plugins": [
+      "expo-font"
+    ]
+  }
+}
