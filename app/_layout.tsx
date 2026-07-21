@@ -8,14 +8,20 @@ function RootGuard() {
   const router = useRouter();
 
   useEffect(() => {
-    if (loading) return;
-    const inAuthGroup = segments[0] === '(auth)';
-    if (!session && !inAuthGroup) {
-      router.replace('/(auth)');
-    } else if (session && inAuthGroup) {
-      router.replace('/(app)');
-    }
-  }, [session, loading, segments]);
+  console.log("SESSION:", session);
+  console.log("LOADING:", loading);
+  console.log("SEGMENTS:", segments);
+
+  if (loading) return;
+
+  const inAuthGroup = segments[0] === '(auth)';
+
+  if (!session && !inAuthGroup) {
+    router.replace('/(auth)');
+  } else if (session && inAuthGroup) {
+    router.replace('/(app)');
+  }
+}, [session, loading, segments]); 
 
   return <Slot />;
 }

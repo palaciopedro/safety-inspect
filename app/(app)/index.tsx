@@ -7,11 +7,13 @@ import { Inspection } from '../../types';
 import { InspectionCard } from '../../components/InspectionCard';
 import { db } from '../../services/database';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useAuth } from '../../hooks/useAuth';
 
 export default function Home() {
   const router = useRouter();
   const [inspections, setInspections] = useState<Inspection[]>([]);
   const [loading, setLoading] = useState(true);
+  const { signOut } = useAuth();
 
   useFocusEffect(
     useCallback(() => {
@@ -93,6 +95,21 @@ export default function Home() {
       onPress={() => router.push('/new-inspection')}
     >
       <Ionicons name="add" size={34} color="#fff" />
+    </TouchableOpacity>
+
+    <TouchableOpacity
+      style={{
+        backgroundColor: 'red',
+        padding: 15,
+        margin: 20,
+      }}
+      onPress={async () => {
+        await signOut();
+      }}
+    >
+      <Text style={{ color: '#fff' }}>
+        SAIR
+      </Text>
     </TouchableOpacity>
 
   </SafeAreaView>
