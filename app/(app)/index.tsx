@@ -1,13 +1,11 @@
 import { useState, useCallback } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
-import { useFocusEffect } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { Inspection } from '../types';
-import { InspectionCard } from '../components/InspectionCard';
-import { db } from '../services/database';
-import { Image } from 'react-native';
+import { Inspection } from '../../types';
+import { InspectionCard } from '../../components/InspectionCard';
+import { db } from '../../services/database';
 import { LinearGradient } from 'expo-linear-gradient';
 
 export default function Home() {
@@ -52,7 +50,7 @@ export default function Home() {
       <View style={styles.brand}>
         <View style={styles.logoContainer}>
           <Image
-            source={require('../assets/logo.png')}
+            source={require('../../assets/logo.png')}
             style={styles.logo}
             resizeMode="contain"
           />

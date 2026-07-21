@@ -1,13 +1,29 @@
-import { Stack } from 'expo-router';
+import { useEffect } from 'react';
+import { Slot, useRouter, useSegments } from 'expo-router';
+import { AuthProvider, useAuthContext } from '../context/AuthContext';
 
-export default function Layout() {
+function RootGuard() {
+  const { session, loading } = useAuthContext();
+  const segments = useSegments();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (loading) return;
+    const inAuthGroup = segments[0] === '(auth)';
+    if (!session && !inAuthGroup) {
+      router.replace('/(auth)');
+    } else if (session && inAuthGroup) {
+      router.replace('/(app)');
+    }
+  }, [session, loading, segments]);
+
+  return <Slot />;
+}
+
+export default function RootLayout() {
   return (
-    <Stack>
-      <Stack.Screen name="index" options={{headerShown: false,}}/>
-      <Stack.Screen name="new-inspection" options={{headerShown: false}} />
-      <Stack.Screen name="inspection/[id]" options={{headerShown: false}} />
-      <Stack.Screen name="new-finding" options={{headerShown: false}} />
-      <Stack.Screen name="settings" options={{headerShown: false}} />
-    </Stack>
+    <AuthProvider>
+      <RootGuard />
+    </AuthProvider>
   );
 }

@@ -3,14 +3,14 @@ import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native
 import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Inspection, Finding } from '../../types';
-import { FindingCard } from '../../components/FindingCard';
-import { FinalizationModal } from '../../components/FinalizationModal';
-import { AppModal } from '../../components/AppModal';
-import { db } from '../../services/database';
-import { formatDateBR } from '../../utils/date';
-import { generateAndShareReport } from '../../services/report';
-import { generateAndShareCSV } from '../../services/csv';
+import { Inspection, Finding } from '../../../types';
+import { FindingCard } from '../../../components/FindingCard';
+import { FinalizationModal } from '../../../components/FinalizationModal';
+import { AppModal } from '../../../components/AppModal';
+import { db } from '../../../services/database';
+import { formatDateBR } from '../../../utils/date';
+import { generateAndShareReport } from '../../../services/report';
+import { generateAndShareCSV } from '../../../services/csv';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function InspectionDetail() {

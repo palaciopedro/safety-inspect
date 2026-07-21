@@ -40,3 +40,13 @@ export interface Finding {
   photos: string[];
   created_at: string;
 }
+
+export interface Profile {
+  id: string;
+  first_name: string;
+  last_name: string;
+  company_name: string;
+  company_logo_path: string | null;
+  created_at: string;
+  updated_at: string;
+}

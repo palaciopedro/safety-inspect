@@ -8,8 +8,8 @@ import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { AppModal } from '../components/AppModal';
-import { settingsService } from '../services/settings';
+import { AppModal } from '../../components/AppModal';
+import { settingsService } from '../../services/settings';
 
 export default function Settings() {
   const router = useRouter();

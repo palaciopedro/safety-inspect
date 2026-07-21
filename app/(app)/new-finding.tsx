@@ -2,18 +2,18 @@ import { useState, useMemo, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { DropdownOption } from '../types';
-import { Dropdown } from '../components/Dropdown';
-import { RiskBadge } from '../components/RiskBadge';
-import { PhotoPicker } from '../components/PhotoPicker';
-import { calculateRiskScore, getRiskLevel } from '../utils/risk';
-import { db } from '../services/database';
+import { DropdownOption } from '../../types';
+import { Dropdown } from '../../components/Dropdown';
+import { RiskBadge } from '../../components/RiskBadge';
+import { PhotoPicker } from '../../components/PhotoPicker';
+import { calculateRiskScore, getRiskLevel } from '../../utils/risk';
+import { db } from '../../services/database';
 import {
   GRAVITY_OPTIONS,
   FREQUENCY_OPTIONS,
   PROBABILITY_OPTIONS,
   EXPOSURE_OPTIONS,
-} from '../constants/dropdownOptions';
+} from '../../constants/dropdownOptions';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 
