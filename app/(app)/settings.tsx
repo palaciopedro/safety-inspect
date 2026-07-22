@@ -1,170 +1,177 @@
 import { useState, useEffect } from 'react';
 import {
-  View, Text, TextInput, TouchableOpacity,
-  Image, StyleSheet, ScrollView,
+  View, Text, TextInput, TouchableOpacity, StyleSheet,
+  ScrollView, Alert, ActivityIndicator, Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import * as ImagePicker from 'expo-image-picker';
-import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
-import { AppModal } from '../../components/AppModal';
-import { settingsService } from '../../services/settings';
+import { useAuth } from '../../hooks/useAuth';
+import { profileService } from '../../services/profile';
 
 export default function Settings() {
-  const router = useRouter();
+  const { profile, refreshProfile, signOut } = useAuth();
+
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [companyName, setCompanyName] = useState('');
-  const [companyLogo, setCompanyLogo] = useState<string | null>(null);
-  const [appModalVisible, setAppModalVisible] = useState(false);
-  const [appModalConfig, setAppModalConfig] = useState<any>(null);
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+
+  const [saving, setSaving] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
 
   useEffect(() => {
-    settingsService.load().then(s => {
-      setCompanyName(s.companyName);
-      setCompanyLogo(s.companyLogo);
-    }).catch(console.error);
-  }, []);
+    if (!profile) return;
+    setFirstName(profile.first_name);
+    setLastName(profile.last_name);
+    setCompanyName(profile.company_name);
+    loadLogoUrl(profile.company_logo_path);
+  }, [profile]);
 
-  const handleSelectLogo = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: false,
-      quality: 1,
-      base64: true,
-    });
-    if (!result.canceled && result.assets[0].base64) {
-      const mimeType = result.assets[0].mimeType ?? 'image/png';
-      setCompanyLogo(
-        `data:${mimeType};base64,${result.assets[0].base64}`
-      );
+  const loadLogoUrl = async (path: string | null) => {
+    if (!path) return;
+    try {
+      const url = await profileService.getLogoUrl(path);
+      setLogoUrl(url);
+    } catch {
+      setLogoUrl(null);
     }
   };
 
   const handleSave = async () => {
+    if (!firstName.trim() || !lastName.trim()) {
+      Alert.alert('Campos obrigatórios', 'Nome e sobrenome são obrigatórios.');
+      return;
+    }
+    setSaving(true);
     try {
-      await settingsService.save({ companyName, companyLogo });
-
-      setAppModalConfig({
-        title: 'Configurações salvas',
-        message: 'As alterações foram salvas com sucesso.',
-        type: 'success',
-        confirmText: 'OK',
+      await profileService.update({
+        first_name: firstName.trim(),
+        last_name: lastName.trim(),
+        company_name: companyName.trim(),
       });
-      setAppModalVisible(true);
-    } catch (error) {
-      setAppModalConfig({
-        title: 'Erro',
-        message: 'Falha ao salvar configurações.',
-        type: 'danger',
-        confirmText: 'OK',
-      });
-      setAppModalVisible(true);
-      console.error(error);
+      await refreshProfile();
+      Alert.alert('Sucesso', 'Perfil atualizado com sucesso.');
+    } catch (error: any) {
+      Alert.alert('Erro', error?.message ?? 'Não foi possível salvar o perfil.');
+    } finally {
+      setSaving(false);
     }
   };
 
+  const handleSelectLogo = async () => {
+    const asset = await profileService.pickLogo();
+    if (!asset) return;
+
+    setUploadingLogo(true);
+    try {
+      const path = await profileService.uploadLogo(asset);
+      await profileService.update({ company_logo_path: path });
+      await refreshProfile();
+      const url = await profileService.getLogoUrl(path);
+      setLogoUrl(url);
+    } catch (error: any) {
+      Alert.alert('Erro', error?.message ?? 'Não foi possível fazer upload da logo.');
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    Alert.alert('Sair', 'Tem certeza que deseja sair da sua conta?', [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Sair',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await signOut();
+          } catch (error: any) {
+            Alert.alert('Erro', error?.message ?? 'Não foi possível sair.');
+          }
+        },
+      },
+    ]);
+  };
+
+
   return (
     <SafeAreaView style={styles.container}>
-      <LinearGradient
-        colors={['#0F4C81', '#1A6BA8', '#4CAF50']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0 }}
-        style={styles.header}
-      >
-        <View style={styles.headerContent}>
-  <TouchableOpacity
-    style={styles.backButton}
-    onPress={() => router.back()}
-  >
-    <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
-  </TouchableOpacity>
+      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
 
-  <Text style={styles.headerTitle}>
-    Configurações
-  </Text>
-</View>
-      </LinearGradient>
+        <Text style={styles.sectionTitle}>Meu Perfil</Text>
 
-      <ScrollView 
-        style={styles.content}
-        contentContainerStyle={styles.contentContainer}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Card Empresa */}
-        <View style={styles.card}>
-          <View style={styles.cardHeader}>
-            <Ionicons name="business" size={24} color="#0F4C81" />
-            <Text style={styles.sectionTitle}>Empresa</Text>
-          </View>
-          
-          <Text style={styles.label}>Nome da Empresa</Text>
-          <TextInput
-            style={styles.input}
-            value={companyName}
-            onChangeText={setCompanyName}
-            placeholder="Ex: Cocari"
-            placeholderTextColor="#9CA3AF"
-          />
+        <Text style={styles.label}>Nome</Text>
+        <TextInput
+          style={styles.input}
+          value={firstName}
+          onChangeText={setFirstName}
+          placeholder="Seu nome"
+          autoCapitalize="words"
+        />
+
+        <Text style={styles.label}>Sobrenome</Text>
+        <TextInput
+          style={styles.input}
+          value={lastName}
+          onChangeText={setLastName}
+          placeholder="Seu sobrenome"
+          autoCapitalize="words"
+        />
+
+        <View style={styles.divider} />
+
+        <Text style={styles.sectionTitle}>Empresa</Text>
+
+        <Text style={styles.label}>Nome da Empresa</Text>
+        <TextInput
+          style={styles.input}
+          value={companyName}
+          onChangeText={setCompanyName}
+          placeholder="Nome da empresa"
+        />
+
+        <Text style={styles.label}>Logo da Empresa</Text>
+
+        <View style={styles.logoContainer}>
+          {uploadingLogo ? (
+            <ActivityIndicator color="#0F4C81" />
+          ) : logoUrl ? (
+            <Image
+              source={{ uri: logoUrl }}
+              style={styles.logoPreview}
+              resizeMode="contain"
+            />
+          ) : (
+            <Text style={styles.logoPlaceholder}>Nenhuma logo selecionada</Text>
+          )}
         </View>
 
-        {/* Card Logo */}
-        <View style={styles.card}>
-          <View style={styles.cardHeader}>
-            <Ionicons name="image" size={24} color="#0F4C81" />
-            <Text style={styles.sectionTitle}>Logo da Empresa</Text>
-          </View>
-
-          <View style={styles.logoPreviewContainer}>
-            {companyLogo ? (
-              <Image 
-                source={{ uri: companyLogo }} 
-                style={styles.logoPreview} 
-                resizeMode="contain" 
-              />
-            ) : (
-              <View style={styles.logoPlaceholder}>
-                <Ionicons name="image-outline" size={56} color="#D1D5DB" />
-                <Text style={styles.placeholderText}>Sem logo</Text>
-              </View>
-            )}
-          </View>
-
-          <TouchableOpacity 
-            style={styles.selectButton} 
-            onPress={handleSelectLogo}
-            activeOpacity={0.8}
-          >
-            <Ionicons name="image" size={20} color="#FFFFFF" />
-            <Text style={styles.selectButtonText}>Selecionar Logo</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity 
-          style={styles.saveButton} 
-          onPress={handleSave}
-          activeOpacity={0.9}
+        <TouchableOpacity
+          style={[styles.secondaryButton, uploadingLogo && styles.disabled]}
+          onPress={handleSelectLogo}
+          disabled={uploadingLogo}
         >
-          <Ionicons name="checkmark-circle" size={24} color="#FFFFFF" />
-          <Text style={styles.saveButtonText}>Salvar</Text>
+          <Text style={styles.secondaryButtonText}>Selecionar Logo</Text>
         </TouchableOpacity>
-      </View>
 
-      <AppModal
-        visible={appModalVisible}
-        title={appModalConfig?.title || ''}
-        message={appModalConfig?.message || ''}
-        type={appModalConfig?.type || 'info'}
-        confirmText={appModalConfig?.confirmText || 'OK'}
-        onConfirm={() => {
-          setAppModalVisible(false);
-          if (appModalConfig?.type === 'success') {
-            router.back();
-          }
-        }}
-        isConfirmOnly={true}
-      />
+        <TouchableOpacity
+          style={[styles.primaryButton, saving && styles.disabled]}
+          onPress={handleSave}
+          disabled={saving}
+        >
+          {saving ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.primaryButtonText}>Salvar</Text>
+          )}
+        </TouchableOpacity>
+
+        <View style={styles.divider} />
+
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <Text style={styles.logoutText}>Sair da conta</Text>
+        </TouchableOpacity>
+
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -174,141 +181,94 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F5F7FA',
   },
-  header: {
-  paddingHorizontal: 20,
-  paddingVertical: 16,
-  borderBottomLeftRadius: 16,
-  borderBottomRightRadius: 16,
-  shadowColor: '#000',
-  shadowOpacity: 0.15,
-  shadowRadius: 8,
-  elevation: 6,
-  },
-  headerContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#FFFFFF',
-    marginLeft: 12,
-  },
-  backButton: {
-  padding: 8,
-  borderRadius: 8,
-  },
-  content: {
-    flex: 1,
-  },
-  contentContainer: {
-    padding: 16,
-    paddingBottom: 100,
-  },
-  card: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 20,
-    shadowColor: '#000',
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    marginBottom: 16,
+  scroll: {
+    padding: 20,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '700',
-    color: '#1F2937',
+    color: '#0F4C81',
+    marginBottom: 16,
+    marginTop: 8,
   },
   label: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
-    color: '#374151',
-    marginBottom: 8,
+    color: '#333',
+    marginBottom: 6,
+    marginTop: 12,
   },
   input: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#fff',
     borderWidth: 1,
-    borderColor: '#E5E7EB',
-    borderRadius: 12,
-    padding: 14,
-    fontSize: 16,
-    color: '#1F2937',
+    borderColor: '#e5e7eb',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 15,
   },
-  logoPreviewContainer: {
+  divider: {
+    height: 1,
+    backgroundColor: '#e5e7eb',
+    marginVertical: 24,
+  },
+  logoContainer: {
     width: '100%',
-    height: 140,
-    borderRadius: 16,
+    height: 125,
+    backgroundColor: '#fff',
     borderWidth: 1,
-    borderColor: '#E5E7EB',
-    backgroundColor: '#FFFFFF',
+    borderColor: '#e5e7eb',
+    borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
+    marginTop: 8,
     overflow: 'hidden',
   },
   logoPreview: {
     width: '100%',
     height: '100%',
+    backgroundColor: '#fff',
   },
   logoPlaceholder: {
-    justifyContent: 'center',
+    fontSize: 13,
+    color: '#999',
+  },
+  secondaryButton: {
+    backgroundColor: '#8b5cf6',
+    padding: 12,
+    borderRadius: 8,
     alignItems: 'center',
-    gap: 8,
+    marginTop: 10,
   },
-  placeholderText: {
-    fontSize: 14,
-    color: '#9CA3AF',
-    fontWeight: '500',
-  },
-  selectButton: {
-    backgroundColor: '#0F4C81',
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 10,
-    padding: 14,
-    borderRadius: 12,
-  },
-  selectButtonText: {
-    color: '#FFFFFF',
+  secondaryButtonText: {
+    color: '#fff',
     fontWeight: '600',
-    fontSize: 16,
+    fontSize: 14,
   },
-  buttonContainer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    paddingBottom: 20,
-    borderTopWidth: 1,
-    borderTopColor: '#E5E7EB',
-  },
-  saveButton: {
-    backgroundColor: '#4CAF50',
-    flexDirection: 'row',
-    justifyContent: 'center',
+  primaryButton: {
+    backgroundColor: '#0F4C81',
+    padding: 14,
+    borderRadius: 10,
     alignItems: 'center',
-    gap: 10,
-    padding: 16,
-    borderRadius: 12,
-    shadowColor: '#4CAF50',
-    shadowOpacity: 0.25,
-    shadowRadius: 6,
-    elevation: 4,
+    marginTop: 24,
   },
-  saveButtonText: {
-    color: '#FFFFFF',
+  primaryButtonText: {
+    color: '#fff',
     fontSize: 16,
+    fontWeight: '700',
+  },
+  disabled: {
+    opacity: 0.6,
+  },
+  logoutButton: {
+    padding: 14,
+    borderRadius: 10,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#ef4444',
+  },
+  logoutText: {
+    color: '#ef4444',
+    fontSize: 15,
     fontWeight: '600',
   },
 });
