@@ -1,32 +1,47 @@
 import { supabase } from '../lib/supabase';
 import { Inspection, Finding } from '../types';
 
+// ─── Auth helper ─────────────────────────────────────────────────────────────
+
+const getAuthenticatedUserId = async (): Promise<string> => {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session?.user?.id) throw new Error('Usuário não autenticado.');
+  return session.user.id;
+};
+
+// ─── Database service ─────────────────────────────────────────────────────────
+
 export const db = {
   inspections: {
     list: async () => {
+      const userId = await getAuthenticatedUserId();
       const { data, error } = await supabase
         .from('inspections')
         .select('*')
+        .eq('user_id', userId)
         .order('created_at', { ascending: false });
       if (error) throw error;
       return data as Inspection[];
     },
-    
+
     create: async (inspection: Omit<Inspection, 'id' | 'created_at'>) => {
+      const userId = await getAuthenticatedUserId();
       const { data, error } = await supabase
         .from('inspections')
-        .insert(inspection)
+        .insert({ ...inspection, user_id: userId })
         .select()
         .single();
       if (error) throw error;
       return data as Inspection;
     },
-    
+
     update: async (id: string, updates: Partial<Inspection>) => {
+      const userId = await getAuthenticatedUserId();
       const { data, error } = await supabase
         .from('inspections')
         .update(updates)
         .eq('id', id)
+        .eq('user_id', userId)
         .select()
         .single();
       if (error) throw error;
@@ -34,26 +49,31 @@ export const db = {
     },
 
     delete: async (id: string) => {
+      const userId = await getAuthenticatedUserId();
       const { error } = await supabase
         .from('inspections')
         .delete()
-        .eq('id', id);
+        .eq('id', id)
+        .eq('user_id', userId);
       if (error) throw error;
     },
 
     getById: async (id: string) => {
+      const userId = await getAuthenticatedUserId();
       const { data, error } = await supabase
         .from('inspections')
         .select('*')
         .eq('id', id)
+        .eq('user_id', userId)
         .single();
       if (error) throw error;
       return data as Inspection;
-    }
+    },
   },
-  
+
   findings: {
     listByInspection: async (inspectionId: string) => {
+      await getAuthenticatedUserId();
       const { data, error } = await supabase
         .from('findings')
         .select('*')
@@ -62,8 +82,9 @@ export const db = {
       if (error) throw error;
       return data as Finding[];
     },
-    
+
     create: async (finding: Omit<Finding, 'id' | 'created_at'>) => {
+      await getAuthenticatedUserId();
       const { data, error } = await supabase
         .from('findings')
         .insert(finding)
@@ -72,16 +93,9 @@ export const db = {
       if (error) throw error;
       return data as Finding;
     },
-    
-    delete: async (id: string) => {
-      const { error } = await supabase
-        .from('findings')
-        .delete()
-        .eq('id', id);
-      if (error) throw error;
-    },
 
     update: async (id: string, updates: Partial<Finding>) => {
+      await getAuthenticatedUserId();
       const { data, error } = await supabase
         .from('findings')
         .update(updates)
@@ -92,7 +106,17 @@ export const db = {
       return data as Finding;
     },
 
+    delete: async (id: string) => {
+      await getAuthenticatedUserId();
+      const { error } = await supabase
+        .from('findings')
+        .delete()
+        .eq('id', id);
+      if (error) throw error;
+    },
+
     getById: async (id: string) => {
+      await getAuthenticatedUserId();
       const { data, error } = await supabase
         .from('findings')
         .select('*')
@@ -100,6 +124,6 @@ export const db = {
         .single();
       if (error) throw error;
       return data as Finding;
-    }
-  }
+    },
+  },
 };
