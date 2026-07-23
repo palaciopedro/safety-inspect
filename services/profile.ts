@@ -1,30 +1,16 @@
 import * as ImagePicker from 'expo-image-picker';
 import { supabase } from '../lib/supabase';
+import { getAuthenticatedUserId } from '../lib/auth';
 import { Profile } from '../types';
 
 const BUCKET = 'company-logos';
 
-const getAuthenticatedUserId = async (): Promise<string> => {
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session?.user?.id) throw new Error('Usuário não autenticado.');
-  return session.user.id;
-};
-
 const getLogoPath = (userId: string) => `${userId}/logo.jpg`;
 
 export const profileService = {
-  get: async (): Promise<Profile> => {
-    const userId = await getAuthenticatedUserId();
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single();
-    if (error) throw error;
-    return data as Profile;
-  },
-
-  update: async (updates: Partial<Pick<Profile, 'first_name' | 'last_name' | 'company_name' | 'company_logo_path'>>): Promise<Profile> => {
+  update: async (
+    updates: Partial<Pick<Profile, 'first_name' | 'last_name' | 'company_name' | 'company_logo_path'>>
+  ): Promise<Profile> => {
     const userId = await getAuthenticatedUserId();
     const { data, error } = await supabase
       .from('profiles')
@@ -59,7 +45,7 @@ export const profileService = {
       .from(BUCKET)
       .upload(path, fileData, {
         contentType: 'image/jpeg',
-        upsert: true, 
+        upsert: true,
       });
 
     if (error) throw error;
@@ -69,7 +55,7 @@ export const profileService = {
   getLogoUrl: async (path: string): Promise<string> => {
     const { data, error } = await supabase.storage
       .from(BUCKET)
-      .createSignedUrl(path, 3600); 
+      .createSignedUrl(path, 3600);
     if (error) throw error;
     return data.signedUrl;
   },

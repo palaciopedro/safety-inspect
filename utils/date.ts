@@ -1,16 +1,17 @@
-export const formatDateBR = (dateString: string): string => {
-  const [year, month, day] = dateString.split('T')[0].split('-');
-  return `${day}/${month}/${year}`;
-};
+import { useAuthContext } from '../context/AuthContext';
 
-export const getCurrentDateLocal = (): string => {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-};
+export const useAuth = () => {
+  const ctx = useAuthContext();
 
-export const dateToISO = (dateString: string): string => {
-  return `${dateString}T12:00:00.000Z`;
+  const displayName = [ctx.profile?.first_name, ctx.profile?.last_name]
+    .filter(Boolean)
+    .join(' ') || ctx.user?.email || '';
+
+  const isAuthenticated = !!ctx.session;
+
+  return {
+    ...ctx,
+    displayName,
+    isAuthenticated,
+  };
 };

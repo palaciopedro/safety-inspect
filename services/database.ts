@@ -1,15 +1,6 @@
 import { supabase } from '../lib/supabase';
+import { getAuthenticatedUserId } from '../lib/auth';
 import { Inspection, Finding } from '../types';
-
-// ─── Auth helper ─────────────────────────────────────────────────────────────
-
-const getAuthenticatedUserId = async (): Promise<string> => {
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session?.user?.id) throw new Error('Usuário não autenticado.');
-  return session.user.id;
-};
-
-// ─── Database service ─────────────────────────────────────────────────────────
 
 export const db = {
   inspections: {
