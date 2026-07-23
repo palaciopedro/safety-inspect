@@ -8,11 +8,11 @@ Aplicativo mobile React Native built with Expo Router. O app gerencia inspeçõe
 
 - `app/` - telas e roteamento do Expo Router.
 - `context/` - provider de autenticação global.
-- `hooks/` - aliases de hooks reutilizáveis.
-- `services/` - lógica de acesso a dados, exportação e perfil.
-- `lib/` - inicialização do cliente Supabase.
+- `hooks/` - hooks reutilizáveis (ex.: `useAuth`).
+- `services/` - serviços principais de negócio: `database.ts`, `profile.ts`, `report.ts`.
+- `lib/` - helpers e inicializadores; inclui `lib/supabase.ts` e `lib/auth.ts` (centraliza `getAuthenticatedUserId()`).
 - `components/` - componentes reutilizáveis de UI.
-- `utils/` - utilitários puros como formatação de data, imagens e geração de HTML para relatório.
+- `utils/` - utilitários puros como imagens e geração de HTML para relatório.
 - `types/` - tipos TypeScript compartilhados.
 - `constants/` - dados estáticos de dropdown.
 
@@ -60,13 +60,13 @@ Aplicativo mobile React Native built with Expo Router. O app gerencia inspeçõe
 ├─ hooks/
 │  └─ useAuth.ts
 ├─ lib/
-│  └─ supabase.ts
+│  ├─ supabase.ts
+│  └─ auth.ts
 ├─ services/
-│  ├─ csv.ts
 │  ├─ database.ts
 │  ├─ profile.ts
 │  ├─ report.ts
-│  └─ settings.ts
+│  └─ settings.ts (LEGADO)
 ├─ types/
 │  └─ index.ts
 └─ utils/
@@ -110,46 +110,41 @@ Aplicativo mobile React Native built with Expo Router. O app gerencia inspeçõe
 
 ### Context & Hooks
 - `context/AuthContext.tsx` - contexto global de autenticação; expõe sessão, usuário, perfil e métodos `signIn`, `signUp`, `signOut`, `refreshProfile`.
-- `hooks/useAuth.ts` - reexporta `useAuthContext` como `useAuth`.
+- `hooks/useAuth.ts` - hook que consome `AuthContext` e agora também expõe `displayName` e `isAuthenticated` além das funcionalidades anteriores.
 
-### Biblioteca Supabase
+### Biblioteca Supabase e Helpers
 - `lib/supabase.ts` - configura cliente Supabase com AsyncStorage e polyfill URL.
+- `lib/auth.ts` - helper centralizado para autenticação; expõe `getAuthenticatedUserId()` usado por serviços que precisam do `user_id`.
 
 ### Services
-- `services/database.ts` - serviço central de `inspections` e `findings` com operações CRUD.
-- `services/profile.ts` - serviço de perfil e upload de logo no storage Supabase.
+- `services/database.ts` - serviço central de `inspections` e `findings` com operações CRUD. Usa `lib/auth.ts` (`getAuthenticatedUserId()`) para obter o usuário autenticado nas operações que precisam de `user_id`.
+- `services/profile.ts` - serviço de perfil e upload de logo no storage Supabase. Também utiliza `lib/auth.ts` quando precisa resolver o `user_id` do contexto.
 - `services/report.ts` - geração e compartilhamento de PDF usando HTML criado por `utils/generateReport.ts`.
-- `services/csv.ts` - exporta dados de ocorrência para CSV e compartilha via `expo-sharing`.
-- `services/settings.ts` - carrega e salva configurações locais em AsyncStorage.
+- `services/settings.ts` - LEGADO: permanece apenas porque o módulo de geração de relatórios depende dele; planejado para remoção em futura refatoração.
 
 ### Tipos
-- `types/index.ts` - tipos TypeScript para `RiskLevel`, `Inspection`, `DropdownOption`, `Finding`, `Profile`.
+- `RiskLevel` - níveis de risco.
+- `Inspection` - dados de inspeção (atualizado: inclui `user_id: string` compatível com o esquema do banco).
+- `DropdownOption` - opção para o dropdown.
+- `Finding` - registro de ocorrência.
+- `Profile` - dados de perfil de usuário.
 
 ### Utils
-- `utils/date.ts` - formatação de datas e data atual local.
-- `utils/generateReport.ts` - HTML para gerar PDF do relatório.
-- `utils/image.ts` - redimensiona imagens e retorna data URI.
-- `utils/risk.ts` - cálculo de score, nível de risco e cor do badge.
+
+- `formatDateBR`, `getCurrentDateLocal` em `utils/date.ts`.
+- `generateReportHTML` em `utils/generateReport.ts`.
+- `processImage` em `utils/image.ts`.
+- `calculateRiskScore`, `getRiskLevel`, `getRiskColor` em `utils/risk.ts`.
 
 ## Dependências Entre Arquivos
 
 - `app/_layout.tsx` usa `AuthContext.tsx`.
 - `AuthContext.tsx` usa `lib/supabase.ts` e tipos de `types/index.ts`.
-- `hooks/useAuth.ts` reexporta `AuthContext.tsx`.
+- `hooks/useAuth.ts` reexporta/consome `AuthContext.tsx` e expõe `displayName` e `isAuthenticated`.
 - `app/(auth)/index.tsx`, `app/(app)/index.tsx`, `app/(app)/settings.tsx` usam `useAuth`.
 - `app/(app)/index.tsx` usa `db.inspections.list`, `InspectionCard`.
 - `app/(app)/new-inspection.tsx` usa `db.inspections.getById/create/update`.
 - `app/(app)/inspection/[id].tsx` usa `db.inspections.getById`, `db.findings.listByInspection`, `FindingCard`, `FinalizationModal`, `AppModal`, `generateAndShareReport`, `generateAndShareCSV`, `formatDateBR`.
-- `app/(app)/new-finding.tsx` usa `db.findings.getById/create/update`, `PhotoPicker`, `RiskBadge`, `Dropdown`, `constants/dropdownOptions`, `calculateRiskScore`, `getRiskLevel`.
-- `app/(app)/settings.tsx` usa `profileService`, `useAuth` e `Image` preview.
-- `components/InspectionCard.tsx` usa `formatDateBR`, `db.findings.listByInspection`, `AppModal`.
-- `components/FindingCard.tsx` usa `RiskBadge`, `AppModal`.
-- `components/PhotoPicker.tsx` usa `processImage` e `AppModal`.
-- `components/RiskBadge.tsx` usa `getRiskColor`.
-- `services/report.ts` usa `settingsService.load` e `generateReportHTML`.
-- `services/csv.ts` usa `Inspection`/`Finding` types.
-- `services/profile.ts` usa `supabase` e `expo-image-picker`.
-- `utils/generateReport.ts` usa `getRiskColor`, `formatDateBR`, `AppSettings`.
 
 ## Fluxo de Autenticação
 
@@ -167,17 +162,14 @@ Aplicativo mobile React Native built with Expo Router. O app gerencia inspeçõe
 ## Fluxo do Banco
 
 - `lib/supabase.ts` fornece instância global do cliente Supabase.
-- `services/database.ts` realiza todas as operações de `inspections` e `findings`.
-- Cada método `db` garante usuário autenticado via `supabase.auth.getSession()`.
-- `inspections` usa a tabela `inspections` e adiciona `user_id` ao criar.
-- `findings` usa a tabela `findings` e filtra por `inspection_id`.
+- `services/database.ts` realiza todas as operações de `inspections` e `findings` e adiciona `user_id` ao criar, usando `lib/auth.ts` quando necessário.
 - `services/profile.ts` atualiza e obtém dados do `profiles` e faz upload de logo para um bucket chamado `company-logos`.
-- `services/settings.ts` armazena configurações locais de empresa em AsyncStorage.
+- `services/settings.ts` armazena configurações locais de empresa em AsyncStorage (LEGADO).
 
 ## Fluxo de Navegação
 
 - Expo Router usa estrutura de pastas para rotas.
-- `app/(auth)` é rota protegida para login/cadastro.
+- `app/(auth)` é rota para telas de autenticação.
 - `app/(app)` é rota do app principal.
 - Roteamento principal:
   - `/` → app/(app)/index
@@ -185,35 +177,17 @@ Aplicativo mobile React Native built with Expo Router. O app gerencia inspeçõe
   - `/inspection/[id]` → app/(app)/inspection/[id]
   - `/new-finding` → app/(app)/new-finding
   - `/settings` → app/(app)/settings
-- `RootGuard` faz redirect automático conforme estado da sessão.
-- `useRouter` e `router.push` / `router.back` são usados para navegar.
 
 ## Fluxo das Inspeções
 
 - `app/(app)/index.tsx` carrega inspeções do usuário usando `db.inspections.list` quando o foco da tela é ativado.
-- `InspectionCard` exibe cada inspeção e permite:
-  - abrir detalhes `/inspection/${id}`
-  - editar `/new-inspection?id=${id}`
-  - excluir via `db.inspections.delete`
-- `new-inspection.tsx`:
-  - se `id` existe, busca inspeção para editar
-  - cria nova inspeção com `status: 'draft'`
-  - atualiza `unit` e `date`
-- `inspection/[id].tsx` mostra detalhes da inspeção.
+- `InspectionCard` exibe cada inspeção e permite abrir detalhes, editar e excluir.
+- `new-inspection.tsx` cria/edita inspeções com `status: 'draft'` por padrão.
 
 ## Fluxo das Ocorrências
 
 - `inspection/[id].tsx` carrega ocorrências via `db.findings.listByInspection(id)`.
-- A tela permite:
-  - adicionar ocorrência `/new-finding?inspectionId=${id}`
-  - editar ocorrência `/new-finding?inspectionId=${id}&findingId=${item.id}`
-  - excluir ocorrência via `db.findings.delete`
-- `new-finding.tsx`:
-  - se `findingId` existe, carrega os dados da ocorrência para editar
-  - coleta campos de descrição, setor, medidas e opções de risco
-  - calcula `calculated_score` e `risk_level`
-  - valida fotos obrigatórias
-  - cria/atualiza no banco
+- A tela permite adicionar/editar/excluir ocorrências.
 
 ## Fluxo das Configurações
 
@@ -221,19 +195,13 @@ Aplicativo mobile React Native built with Expo Router. O app gerencia inspeçõe
 - Carrega dados do perfil do contexto via `useAuth()`.
 - Permite editar nome, sobrenome e nome da empresa.
 - Salva alterações com `profileService.update` e atualiza o contexto com `refreshProfile()`.
-- Permite selecionar logo, fazer upload e exibir via URL assinada.
-- Logout chama `signOut` do contexto.
 
 ## Fluxo do Upload de Imagens
 
 ### Upload em ocorrências
 - `PhotoPicker.tsx` pede permissão de câmera se necessário.
 - Usuário escolhe câmera ou galeria.
-- Imagens são processadas por `utils/image.ts`:
-  - redimensiona para 800x800
-  - comprime em JPEG/PNG
-  - retorna data URI base64
-- Fotos são guardadas no estado `photos: string[]` e persistidas em `findings.photos`.
+- Imagens são processadas por `utils/image.ts`.
 
 ### Upload de logo de empresa
 - `services/profile.ts` usa `expo-image-picker` para escolher imagem.
@@ -252,70 +220,70 @@ Aplicativo mobile React Native built with Expo Router. O app gerencia inspeçõe
 
 ## Hooks
 
-- `useAuth` - hook único que consome `AuthContext`.
+- `useAuth` - hook único que consome `AuthContext` e expõe `displayName` e `isAuthenticated` além de sessão e métodos de perfil.
 
-## Services
+## Services (Resumo)
 
 - `db` em `services/database.ts`:
-  - inspeções: `list`, `create`, `update`, `delete`, `getById`
-  - ocorrências: `listByInspection`, `create`, `update`, `delete`, `getById`
+  - inspeções: `list`, `create`, `update`, `delete`, `getById` (usa `user_id`).
+  - ocorrências: `listByInspection`, `create`, `update`, `delete`, `getById`.
 - `profileService` em `services/profile.ts`:
-  - `get`, `update`, `pickLogo`, `uploadLogo`, `getLogoUrl`
-- `settingsService` em `services/settings.ts`:
-  - `load`, `save`
-- `generateAndShareReport` em `services/report.ts`
-- `generateAndShareCSV` em `services/csv.ts`
+  - `get`, `update`, `pickLogo`, `uploadLogo`, `getLogoUrl`.
+- `settingsService` em `services/settings.ts` (LEGADO).
+- `generateAndShareReport` em `services/report.ts`.
 
 ## Utils
 
-- `formatDateBR`, `getCurrentDateLocal`, `dateToISO` em `utils/date.ts`.
 - `generateReportHTML` em `utils/generateReport.ts`.
 - `processImage` em `utils/image.ts`.
-- `calculateRiskScore`, `getRiskLevel`, `getRiskColor` em `utils/risk.ts`.
+- `formatDateBR`, `getCurrentDateLocal` em `utils/date.ts`.
 
 ## Tipos
 
-- `RiskLevel` - níveis de risco.
-- `Inspection` - dados de inspeção.
-- `DropdownOption` - opção para o dropdown.
-- `Finding` - registro de ocorrência.
-- `Profile` - dados de perfil de usuário.
+- `Inspection` agora inclui `user_id: string`.
 
 ## Arquivos Mortos / Código Não Usado
 
-- `utils/date.ts` exporta `dateToISO`, que não é usado em nenhum arquivo atual.
-- `services/settings.ts` exporta `save`, mas a função `save` não está hoje invocada em nenhum lugar do app.
-- `services/profile.ts` exporta `get`, mas esse método também não é utilizado atualmente.
+- `services/settings.ts` exporta `save`, mas a função `save` não é amplamente invocada (arquivo LEGADO).
+- `services/profile.ts` exporta `get`, mas esse método não é amplamente utilizado atualmente.
 
 ## Código Duplicado
 
-- Vários formulários usam padrões de `View`, `TextInput`, `label`, `card` e `button` idênticos.
-- `new-inspection.tsx`, `new-finding.tsx` e `settings.tsx` repetem estruturas de formulário e estilo de campo.
-- `app/(app)/index.tsx`, `app/(app)/inspection/[id].tsx` e `InspectionCard.tsx` repetem lógica de carregamento/atualização após ação.
-- `AppModal` e o padrão de modal de exclusão aparecem repetidos sem abstração adicional.
+- Vários formulários repetem padrões de UI e estrutura.
+- `AppModal` e padrões de modal aparecem repetidos sem abstração adicional.
+- Observação: a duplicação de `getAuthenticatedUserId()` foi centralizada em `lib/auth.ts` durante a última refatoração, removendo chamadas repetidas em múltiplos serviços.
 
 ## Oportunidades de Melhoria
 
 1. Centralizar estilos compartilhados ou criar componentes de formulário/inputs reusáveis para reduzir duplicação.
 2. Consolidar chamadas de carregamento de dados e atualizar listas com `useCallback` + estado global local.
-3. Reduzir chamadas de banco redundantes:
-   - `InspectionCard` busca contagem de ocorrências individualmente para cada cartão.
-   - Seria melhor usar uma query agregada ou carregar todos os counts em lote.
-4. Tornar `services/profile.ts` e `services/settings.ts` consistentes com métodos usados; remover ou usar os métodos `get` e `save` não utilizados.
+3. Reduzir chamadas de banco redundantes (ex.: counts em lote em vez de queries individuais por cartão).
+4. Tornar `services/profile.ts` e `services/settings.ts` consistentes com métodos usados; remover ou usar métodos não utilizados.
 5. Evitar `any` em estados de modal e `useLocalSearchParams` retornos; tipar melhor `appModalConfig` e `findingId`.
 6. Normalizar imagens em vez de usar data URIs em `findings.photos` para reduzir consumo de memória.
 7. Melhorar UX de autenticação / validação de formulário com mensagens mais específicas e tratamento de erros.
 8. Considerar extração de lógica de `RootGuard` para hooks/funções reutilizáveis.
-9. Persistir configurações locais de empresa usando `settingsService.save` quando relevante e exibir no app se estiver definido.
+9. Migrar uso de `services/settings.ts` antes de removê-lo (dependência do relatório).
 10. Verificar banco de dados e esquemas Supabase para garantir que `profiles`, `inspections`, `findings` e storage bucket `company-logos` estejam sincronizados.
 
-## Observações Adicionais
+## Refatorações Concluídas
 
-- `supabase.auth.getSession()` é usado em múltiplos lugares; há chance de duplicação de verificação de autenticação.
-- O app depende de imagens locais `assets/logo.png` e renderiza relatórios PDF via HTML injetado.
-- A navegação é controlada por `expo-router` e estrutura de pastas; o nome dos arquivos corresponde diretamente às rotas.
-- O fluxo de finalização da inspeção usa assinaturas digitais em `FinalizationModal.tsx` e atualiza a inspeção para `status: 'completed'`.
+- Centralização da autenticação em `lib/auth.ts` (função `getAuthenticatedUserId()` consolidada).
+- Remoção da duplicação de `getAuthenticatedUserId()` em serviços.
+- Melhoria do hook `useAuth` para expor `displayName` e `isAuthenticated`.
+- Atualização da interface `Inspection` para incluir `user_id`.
+- Remoção de código morto quando aplicável (ex.: limpeza de exports não utilizados).
+
+## Roadmap Técnico
+
+1. Remover `services/settings.ts` após migrar o módulo de relatórios.
+2. Refatorar completamente o sistema de geração de relatórios.
+3. Revisar e padronizar componentes compartilhados.
+4. Etapa de UI/UX Polish.
+5. Otimizações de performance.
+6. Testes finais.
+7. Build de produção.
 
 ---
 
-Este documento foi criado para permitir compreensão completa do projeto sem abrir os arquivos.
+Este documento foi atualizado para refletir a estrutura e decisões após a última refatoração.
